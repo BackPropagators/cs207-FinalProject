@@ -7,6 +7,6 @@ Group members: Yichen Geng,
                
 [![Build Status](https://travis-ci.org/BackPropagators/cs207-FinalProjec.svg?branch=master)](https://travis-ci.org/BackPropagators/cs207-FinalProjec.svg?branch=master)
 
-[![Coverage Status](https://codecov.io/gh/CodeCov/branch/master/graph/badge.svg)](https://codecov.io/gh/CodeCov)
+[![Coverage Status](https://codecov.io/gh/BackPropagators/cs207-FinalProjec/branch/master/graph/badge.svg)](https://codecov.io/gh/BackPropagators/cs207-FinalProjec)
 
 
