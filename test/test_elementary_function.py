@@ -3,14 +3,6 @@ import numpy as np
 import math
 
 
-
-x = Var(np.array([2.0]), np.array([1, 0]))
-y = Var(np.array([3.0]), np.array([0, 1]))
-f = x*y
-f.val
-f.jacobian
-
-
 def test_scalar_input():
 
     def suite_negative():
@@ -178,3 +170,20 @@ def test_scalar_input():
         f = x.logistic()
         assert np.round(f.val, 4) == [0.9933]
         assert np.round(f.jacobian, 4) == [0.0066]
+
+    suite_negative()
+    suite_abs()
+    suite_constant()
+    suite_sin()
+    suite_cos()
+    suite_tan()
+    suite_arcsin()
+    suite_arccos()
+    suite_arctan()
+    suite_sinh()
+    suite_cosh()
+    suite_tanh()
+    suite_sqrt()
+    suite_log()
+    suite_exp()
+    suite_logistic()
