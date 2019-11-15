@@ -8,8 +8,8 @@ def test_scalar_input():
     def suite_negative():
         x1 = Var(np.array([2.0]))
         f1 = -x1
-        assert f.val == [-2.0]
-        assert f.jacobian == [-1.0]
+        assert f1.val == [-2.0]
+        assert f1.jacobian == [-1.0]
 
         x2 = Var(np.array([0.0]))
         f2 = -x2
@@ -38,13 +38,11 @@ def test_scalar_input():
         assert f3.val == [5.0]
         assert f3.jacobian == [-1.0]
 
-
     def suite_constant():
         x = Var(np.array([4.0]), None)
         f = x
         assert f.val == 4.0
         assert f.jacobian == None
-
 
     def suite_sin():
         x1 = Var(np.pi)
@@ -67,7 +65,6 @@ def test_scalar_input():
         f2 = 10e16 * np.cos(x2)
         assert np.round(f2.val, 2) == [-18.37]
         assert np.round(f2.jacobian, 2) == [1.e+17]
-
 
     def suite_tan():
 
@@ -116,7 +113,6 @@ def test_scalar_input():
         assert np.round(f.val, 2) == [0.79]
         assert np.round(f.jacobian, 2) == [0.5]
 
-
     def suite_sinh():
         x = Var(1)
         f = np.sinh(x)
@@ -150,14 +146,12 @@ def test_scalar_input():
         # log() not defined for x <= 0
         with np.testing.assert_raises(ValueError):
             x0 = Var(0)
-            f0 = x2.log(10)
+            f0 = x0.log(10)
 
         x1 = Var(1000)
         f1 = x1.log(10)
         assert np.round(f1.val, 2) == [3.0]
         assert np.round(f1.jacobian, 4) == [0.0004]
-
-
 
     def suite_exp():
         x = Var(5)
@@ -187,3 +181,4 @@ def test_scalar_input():
     suite_log()
     suite_exp()
     suite_logistic()
+    
