@@ -318,18 +318,16 @@ def test_vector_input():
             f = np.sqrt(2 * x - y)
 
     def suite_log():
-        x = Var(10.0, [1, 0, 0])
-        y = Var(20.0, [0, 1, 0])
-        z = Var(30.0, [0, 0, 1])
-        f = 2 * x - y + z
+        x = Var(5.0, [1])
+        f = Var([x + 2, x ** 3, 2 * x])
         f1 = f.log(2)
-        np.testing.assert_array_equal(np.round(f1.val, 2), np.array([4.91]))
-        np.testing.assert_array_equal(np.round(f1.jacobian, 2), np.array([0.1, -0.05, 0.05]))
+        np.testing.assert_array_equal(np.round(f1.val, 2), np.array([2.81, 6.97, 3.32]))
+        np.testing.assert_array_equal(np.round(f1.jacobian, 2), np.array([[0.21], [0.87], [0.29]]))
 
         # log() not defined for x <= 0
         with np.testing.assert_raises(ValueError):
-            f2 = - x - y + z
-            f3 = f2.log(5)
+            f2 = Var([x, -x, x ** 2])
+            f3 = f2.log(2)
 
     def suite_exp():
         x = Var(1.0, [1, 0, 0])
@@ -365,3 +363,168 @@ def test_vector_input():
     suite_log()
     suite_exp()
     suite_logistic()
+
+
+def test_vector_input_1_to_n():
+
+    def suite_negative():
+        x = Var(2.0, [1])
+        f = Var([x, 2 * x, x ** 2])
+        f1 = -f
+        np.testing.assert_array_equal(f1.val, np.array([-2., -4., -4.]))
+        np.testing.assert_array_equal(f1.jacobian, np.array([[-1.], [-2.], [-4.]]))
+
+    def suite_abs():
+        # abs() not differentiable at zero
+        with np.testing.assert_raises(ValueError):
+            x = Var(0.0, [1, 0])
+            f = Var([x, x ** 2, x ** 3])
+            f1 = abs(f)
+
+        x = Var(3.0, [1])
+        f = Var([x, 2 * x, x ** 3])
+        f1 = abs(f)
+        np.testing.assert_array_equal(f1.val, np.array([3., 6., 27.]))
+        np.testing.assert_array_equal(f1.jacobian, np.array([[1.], [2.], [27.]]))
+
+    def suite_constant():
+        x = Var(5.0)
+        f = Var([x, x ** 2])
+        np.testing.assert_array_equal(f.val, np.array([5., 25.]))
+        np.testing.assert_array_equal(f.jacobian, np.array([[1.], [10.]]))
+
+    def suite_sin():
+        x = Var(np.pi / 2, [1])
+        f = Var([np.sin(x) + 1, 3 * np.sin(x), np.sin(x) ** 3])
+        np.testing.assert_array_equal(np.round(f.val, 2), np.array([2., 3., 1.]))
+        np.testing.assert_array_equal(np.round(f.jacobian, 2), np.array([[0.], [0.], [0.]]))
+
+    def suite_cos():
+        x = Var(np.pi / 2, [1])
+        f = Var([np.cos(x) + 1, 3 * np.cos(x), np.cos(x) ** 3])
+        np.testing.assert_array_equal(np.round(f.val, 2), np.array([1., 0., 0.]))
+        np.testing.assert_array_equal(np.round(f.jacobian, 2), np.array([[-1.], [-3.], [0.]]))
+
+    def suite_tan():
+        x = Var(np.pi / 4, [1])
+        f = Var([np.tan(x) + 1, np.tan(x), np.tan(x) ** 2])
+        np.testing.assert_array_equal(np.round(f.val, 2), np.array([2., 1., 1.]))
+        np.testing.assert_array_equal(np.round(f.jacobian, 2), np.array([[2.], [2.], [4.]]))
+
+    def suite_arcsin():
+        x = Var(0.5, [1])
+        f = Var([2 * np.arcsin(x), np.arcsin(x) + 1, np.arcsin(x) ** 3])
+        np.testing.assert_array_equal(np.round(f.val, 2), np.array([1.05, 1.52, 0.14]))
+        np.testing.assert_array_equal(np.round(f.jacobian, 2), np.array([[2.31], [1.15], [0.95]]))
+
+        x = Var(1, [1])
+        f = Var([2 * np.arcsin(x), np.arcsin(x) + 1, np.arcsin(x) ** 3])
+        np.testing.assert_array_equal(np.round(f.val, 2), np.array([3.14, 2.57, 3.88]))
+        np.testing.assert_array_equal(np.round(f.jacobian, 2), np.array([[np.nan], [np.nan], [np.nan]]))
+
+        # not defined for |x| > 1
+        with np.testing.assert_raises(ValueError):
+            z = Var(2, [1])
+            f = Var([np.arcsin(z), np.arcsin(z) ** 2])
+
+    def suite_arccos():
+        x = Var(0.5, [1])
+        f = Var([2 * np.arccos(x), np.arccos(x) + 1, np.arccos(x) ** 3])
+        np.testing.assert_array_equal(np.round(f.val, 2), np.array([2.09, 2.05, 1.15]))
+        np.testing.assert_array_equal(np.round(f.jacobian, 2), np.array([[-2.31], [-1.15], [-3.8]]))
+
+        x = Var(1, [1])
+        f = Var([2 * np.arccos(x), np.arccos(x) + 1, np.arccos(x) ** 3])
+        np.testing.assert_array_equal(np.round(f.val, 2), np.array([0., 1., 0.]))
+        np.testing.assert_array_equal(np.round(f.jacobian, 2), np.array([[np.nan], [np.nan], [np.nan]]))
+
+        # not defined for |x| > 1
+        with np.testing.assert_raises(ValueError):
+            z = Var(2, [1])
+            f = Var([np.arccos(z), np.arccos(z) ** 2])
+
+    def suite_arctan():
+        x = Var(1, [1])
+        f = Var([np.arctan(x) ** 3, 2 * np.arctan(x)])
+        np.testing.assert_array_equal(np.round(f.val, 2), np.array([0.48, 1.57]))
+        np.testing.assert_array_equal(np.round(f.jacobian, 2), np.array([[0.93], [1.]]))
+
+    def suite_sinh():
+        x = Var(1, [1])
+        f = Var([np.sinh(x) ** 3, 2 * np.sinh(x)])
+        np.testing.assert_array_equal(np.round(f.val, 2), np.array([1.62, 2.35]))
+        np.testing.assert_array_equal(np.round(f.jacobian, 2), np.array([[6.39], [3.09]]))
+
+    def suite_cosh():
+        x = Var(1, [1])
+        f = Var([np.cosh(x) ** 3, 2 * np.cosh(x)])
+        np.testing.assert_array_equal(np.round(f.val, 2), np.array([3.67, 3.09]))
+        np.testing.assert_array_equal(np.round(f.jacobian, 2), np.array([[8.39], [2.35]]))
+
+    def suite_tanh():
+        x = Var(1, [1])
+        f = Var([np.tanh(x) ** 3, 2 * np.tanh(x)])
+        np.testing.assert_array_equal(np.round(f.val, 2), np.array([0.44, 1.52]))
+        np.testing.assert_array_equal(np.round(f.jacobian, 2), np.array([[0.73], [0.84]]))
+
+
+    def suite_sqrt():
+        x = Var(2.0, [1])
+        f = Var([x + 2, 3 * x, x ** 2])
+        f1 = np.sqrt(f)
+        np.testing.assert_array_equal(np.round(f1.val, 2), np.array([2., 2.45, 2.]))
+        np.testing.assert_array_equal(np.round(f1.jacobian, 2), np.array([[0.25], [0.61], [1.]]))
+        # derivative of 0^x does not exist if x < 1
+        with np.testing.assert_raises(ZeroDivisionError):
+            x = Var(0.0, [1])
+            f = Var([x, 3 * x])
+            f = np.sqrt(f)
+
+
+    def suite_log():
+        x = Var(5.0, [1])
+        f = Var([x + 2, x ** 3, 2 * x])
+        f1 = f.log(2)
+        np.testing.assert_array_equal(np.round(f1.val, 2), np.array([2.81, 6.97, 3.32]))
+        np.testing.assert_array_equal(np.round(f1.jacobian, 2), np.array([[0.21], [0.87], [0.29]]))
+
+        # log() not defined for x <= 0
+        with np.testing.assert_raises(ValueError):
+            f2 = Var([x, -x, x ** 2])
+            f3 = f2.log(2)
+
+
+    def suite_exp():
+        x = Var(2.0, [1])
+        f = Var([x + 2, 3 * x, x ** 2])
+        f1 = np.exp(f)
+        np.testing.assert_array_equal(np.round(f1.val, 2), np.array([54.6, 403.43, 54.6]))
+        np.testing.assert_array_equal(np.round(f1.jacobian, 2), np.array([[54.6], [1210.29], [218.39]]))
+
+    def suite_logistic():
+        x = Var(2.0, [1])
+        f = Var([x + 2, 3 * x, x ** 2])
+        f1 = f.logistic()
+        np.testing.assert_array_equal(np.round(f1.val, 3), np.array([0.982, 0.998, 0.982]))
+        np.testing.assert_array_equal(np.round(f1.jacobian, 3), np.array([[0.018], [0.007], [0.071]]))
+
+    suite_negative()
+    suite_abs()
+    suite_constant()
+    suite_sin()
+    suite_cos()
+    suite_tan()
+    suite_arcsin()
+    suite_arccos()
+    suite_arctan()
+    suite_sinh()
+    suite_cosh()
+    suite_tanh()
+    suite_sqrt()
+    suite_log()
+    suite_exp()
+    suite_logistic()
+
+
+
+
