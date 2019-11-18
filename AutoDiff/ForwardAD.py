@@ -213,17 +213,17 @@ class Var:
 
     def __pow__(self, power, modulo=None):
         if isinstance(power, Var):
-            # TODO check if power._val is an integer
-            # TODO check derivative
+            if self._val < 0:
+                raise ValueError("The derivative of x ** y is not defined on x < 0.")
             new_val = self._val ** power._val
             new_jacobian = {}
 
             new_vars = set(self._jacobian.keys()) | set(power._jacobian.keys())
             for var in new_vars:
-                new_jacobian[var] = power._val * self._val ** (power._val - 1) * float(self._jacobian.get(var) or 0) \
-                               + (self._val ** power._val) * np.log(self._val) * float(power._jacobian.get(var) or 0)
-        elif isinstance(power, (int, np.int)):
-            # TODO check if power is an integer
+                new_jacobian[var] = new_val * \
+                                    (float(power._jacobian.get(var) or 0) * np.log(self._val) +
+                                     power._val * float(self._jacobian.get(var) or 0) / self._val)
+        elif isinstance(power, Var.valid_types):
             new_val = self._val ** power
             new_jacobian = {}
 
@@ -239,8 +239,9 @@ class Var:
         return new_var
 
     def __rpow__(self, other):
-        # TODO check if self._val is an integer
         if isinstance(other, Var.valid_types):
+            if other < 0:
+                raise ValueError("The derivative of b ** x, b**x * ln(b), is not defined on b < 0.")
             new_val = other ** self._val
             new_jacobian = {}
 
@@ -447,3 +448,5 @@ class Var:
 # f = np.exp(1) ** x
 # print(f.get_value())
 # print(f.get_jacobian())
+
+
