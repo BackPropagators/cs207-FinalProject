@@ -7,15 +7,15 @@ def test_constructor():
     def test_np_input():
         x = Var(np.array([1.0]))
         assert x.val == [1.0]  
-        assert type(x.val) == ??
+        assert type(x.val) == np.ndarray
         assert x.jacobian = [1.0]
         
-    def test_with_given_jac():   ??
+    def test_with_given_jac():   
         jac = np.array[3.2]
         x = Var(np.array[2.0], jac)
         assert x.val == [2.0]
-        assert type(x.val) == ??
-        assert x.jacobian == [jac[0]]  ??
+        assert type(x.val) == np.ndarray
+        assert x.jacobian == [jac[0]] 
 
         
 def overwritten_elementary():
@@ -141,10 +141,11 @@ def overwritten_elementary():
             z2 = a**(x+y)
             assert z2.val == [64.0]
             assert z2.jacobian == [np.log(a)*64.0, np.log(a)*64.0]
-            
+    
+    '''       
     def test_vector_input():
-        x = Var(np.array([4.0, [1.0,0]]))
-        y = Var(np.array([2.0, [0, 1.0]]))
+        #x = Var(np.array([4.0, [1.0,0]]))
+        #y = Var(np.array([2.0, [0, 1.0]]))
         def suite_add():
             x = Var(np.array([4.0]))
             y = Var(np.array([1.5]))
@@ -264,7 +265,7 @@ def overwritten_elementary():
             z2 = a**(x+y)
             assert z2.val == [64.0]
             assert z2.jacobian == [np.log(a)*64.0, np.log(a)*64.0]
-        
+     '''   
 def overwritten_comparison():
     x = Var(np.array([4.0]))
     y = Var(np.array([1.5]))
