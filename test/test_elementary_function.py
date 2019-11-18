@@ -148,10 +148,10 @@ def test_scalar_input():
         # log() not defined for x <= 0
         with np.testing.assert_raises(ValueError):
             x0 = Var(0)
-            f0 = Var.log(x0)
+            f0 = Var.log(x0, 10)
 
         x1 = Var(1000)
-        f1 = Var.log(x1)
+        f1 = Var.log(x1, 10)
         assert np.round(f1.get_value(), 2) == 3.0
         assert np.round(f1.get_jacobian(), 4) == [0.0004]
 
