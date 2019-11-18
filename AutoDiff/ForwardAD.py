@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 
 class Var:
@@ -49,7 +50,7 @@ class Var:
 
     def __radd__(self, other):
         if isinstance(other, Var.valid_types):
-            new_val = self._val + other
+            new_val = other + self._val
             new_jacobian = self._jacobian
         else:
             raise TypeError('Invalid input type. ' +
@@ -119,7 +120,7 @@ class Var:
 
     def __rmul__(self, other):
         if isinstance(other, Var.valid_types):
-            new_val = self._val * other
+            new_val = other * self._val
             new_jacobian = {}
 
             new_vars = self._jacobian.keys()
@@ -135,6 +136,8 @@ class Var:
 
     def __truediv__(self, other):
         if isinstance(other, Var):
+            if other._val == 0:
+                raise ZeroDivisionError("Denominator cannot be 0.")
             new_val = self._val / other._val
             new_jacobian = {}
 
@@ -144,6 +147,8 @@ class Var:
                                 - self._val * float(other._jacobian.get(var) or 0))\
                                /(other._val ** 2)
         elif isinstance(other, Var.valid_types):
+            if other == 0:
+                raise ZeroDivisionError("Denominator cannot be 0.")
             new_val = self._val / other
             new_jacobian = {}
 
@@ -159,6 +164,8 @@ class Var:
         return new_var
 
     def __rtruediv__(self, other):
+        if self._val == 0:
+            raise ZeroDivisionError("Denominator cannot be 0.")
         if isinstance(other, Var.valid_types):
             new_val = other / self._val
             new_jacobian = {}
@@ -206,6 +213,8 @@ class Var:
 
     def __pow__(self, power, modulo=None):
         if isinstance(power, Var):
+            # TODO check if power._val is an integer
+            # TODO check derivative
             new_val = self._val ** power._val
             new_jacobian = {}
 
@@ -213,7 +222,8 @@ class Var:
             for var in new_vars:
                 new_jacobian[var] = power._val * self._val ** (power._val - 1) * float(self._jacobian.get(var) or 0) \
                                + (self._val ** power._val) * np.log(self._val) * float(power._jacobian.get(var) or 0)
-        elif isinstance(power, Var.valid_types):
+        elif isinstance(power, (int, np.int)):
+            # TODO check if power is an integer
             new_val = self._val ** power
             new_jacobian = {}
 
@@ -222,20 +232,21 @@ class Var:
                 new_jacobian[var] = power * self._val ** (power - 1) * self._jacobian.get(var)
         else:
             raise TypeError('Invalid input type. ' +
-                            'Other must be any of the following types: Var, int, float, np.int, np.float.')
+                            'Other must be any of the following types: Var, int, np.int.')
 
         new_var = Var(new_val)
         new_var._jacobian = new_jacobian
         return new_var
 
-    def __rpow__(self, power, modulo=None):
-        if isinstance(power, Var):
-            new_val = self ** power._val
+    def __rpow__(self, other):
+        # TODO check if self._val is an integer
+        if isinstance(other, Var.valid_types):
+            new_val = other ** self._val
             new_jacobian = {}
 
             new_vars = set(self._jacobian.keys())
             for var in new_vars:
-                new_jacobian[var] = (self ** power._val) * np.log(power._val) * self._jacobian.get(var)
+                new_jacobian[var] = (other ** self._val) * np.log(other) * self._jacobian.get(var)
         else:
             raise TypeError('Invalid input type. ' +
                             'Other must be any of the following types: int, float, np.int, np.float.')
@@ -256,13 +267,19 @@ class Var:
         new_var._jacobian = new_jacobian
         return new_var
 
-    def log(self):
-        new_val = np.log(self._val)
+    def log(self, b):
+        # b is the base. The default is e (natural log).
+        if not isinstance(b, (int, np.int)):
+            raise TypeError("Invalid input type. b should be any of the following type: int and numpy.int.")
+        if self._val <= 0:
+            raise ValueError("log(x) is not defined on x <= 0.")
+
+        new_val = math.log(self._val, b)
         new_jacobian = {}
 
         new_vars = set(self._jacobian.keys())
         for var in new_vars:
-            new_jacobian[var] = 1/self._val * self._jacobian.get(var)
+            new_jacobian[var] = 1 / (self._val * np.log(b)) * self._jacobian.get(var)
 
         new_var = Var(new_val)
         new_var._jacobian = new_jacobian
@@ -270,12 +287,17 @@ class Var:
 
     def sqrt(self):
         # TODO should we check self type?
+        if self._val < 0:
+            raise ValueError("srqt(x) is not not defined on x < 0.")
+        elif self._val == 0:
+            raise ZeroDivisionError("Zero division occurs when derivative is calculated. " +
+                                    "The derivative of sqrt(x), 1/2 * 1/sqrt(x), is undefined on x = 0.")
         new_val = np.sqrt(self._val)
         new_jacobian = {}
 
         new_vars = self._jacobian.keys()
         for var in new_vars:
-            new_jacobian[var] = 1 / 2 * np.power(self._val, -1 / 2) * self._jacobian[var]
+            new_jacobian[var] = 1/2 * self._val**(-1/2) * self._jacobian[var]
 
         new_var = Var(new_val)
         new_var._jacobian = new_jacobian
@@ -294,12 +316,19 @@ class Var:
         return new_var
 
     def arcsin(self):
+        if abs(self._val) > 1:
+            raise ValueError("Invalid value input. arcsine is not define on |x| > 1 for real output.")
+        elif self._val == 1:
+            raise ZeroDivisionError("Zero division occurs when derivative is calculated. " +
+                                    "The derivative of arcsin(x), 1/sqrt(1 - x^2), " +
+                                    "is undefined on x = 1.")
+
         new_val = np.arcsin(self._val)
         new_jacobian = {}
 
         new_vars = self._jacobian.keys()
         for var in new_vars:
-            new_jacobian[var] = 1 / np.sqrt(1 - np.power(self._val, 2)) * self._jacobian[var]
+            new_jacobian[var] = 1 / np.sqrt(1 - self._val**2) * self._jacobian[var]
 
         new_var = Var(new_val)
         new_var._jacobian = new_jacobian
@@ -318,24 +347,32 @@ class Var:
         return new_var
 
     def arccos(self):
+        if abs(self._val) > 1:
+            raise ValueError("Invalid value input. arcsin(x) is not defined on |x| > 1 for real output.")
+        elif self._val == 1:
+            raise ZeroDivisionError("Zero division occurs when derivative is calculated. " +
+                                    "The derivative of arccos(x), -1/sqrt(1 - x^2), " +
+                                    "is undefined on x = 1.")
         new_val = np.arccos(self._val)
         new_jacobian = {}
 
         new_vars = self._jacobian.keys()
         for var in new_vars:
-            new_jacobian[var] = -1 / np.sqrt(1 - np.power(self._val, 2)) * self._jacobian[var]
+            new_jacobian[var] = -1 / np.sqrt(1 - self._val**2) * self._jacobian[var]
 
         new_var = Var(new_val)
         new_var._jacobian = new_jacobian
         return new_var
 
     def tan(self):
+        if self._val % (np.pi/2) == 0 and (self._val / (np.pi/2)) % 2 != 0:
+            raise ValueError("Invalid value input. tan(x) is not defined on x = (2n+1)*pi/2.")
         new_val = np.tan(self._val)
         new_jacobian = {}
 
         new_vars = self._jacobian.keys()
         for var in new_vars:
-            new_jacobian[var] = np.power(1 / np.cos(self._val), 2) * self._jacobian[var]
+            new_jacobian[var] = (1 / np.cos(self._val))**2 * self._jacobian[var]
 
         new_var = Var(new_val)
         new_var._jacobian = new_jacobian
@@ -347,7 +384,7 @@ class Var:
 
         new_vars = self._jacobian.keys()
         for var in new_vars:
-            new_jacobian[var] = 1 / (np.power(self._val, 2) + 1) * self._jacobian[var]
+            new_jacobian[var] = 1 / (self._val**2 + 1) * self._jacobian[var]
 
         new_var = Var(new_val)
         new_var._jacobian = new_jacobian
@@ -383,17 +420,30 @@ class Var:
 
         new_vars = self._jacobian.keys()
         for var in new_vars:
-            new_jacobian[var] = np.power(1 / np.cosh(self._val), 2) * self._jacobian[var]
+            new_jacobian[var] = (1 / np.cosh(self._val))**2 * self._jacobian[var]
 
         new_var = Var(new_val)
         new_var._jacobian = new_jacobian
         return new_var
 
+# x = Var(3)
+# y = Var(3)
+# f = Var.sqrt(x + 2 * y)
+# print(f.get_value())
+# print(type(f.get_value()))
+# print(f.get_jacobian())
+# print(type(f.get_jacobian()))
 
-x = Var(3)
-y = Var(3)
-f = Var.sqrt(x + 2 * y)
-print(f.get_value())
-print(type(f.get_value()))
-print(f.get_jacobian())
-print(type(f.get_jacobian()))
+# x = Var(3*np.pi/2)
+# f = Var.tan(x)
+# print(f.get_value())
+
+# x = Var(100)
+# f = Var.log(x, b=10)
+# print(f.get_value())
+# print(f.get_jacobian())
+
+# x = Var(2)
+# f = np.exp(1) ** x
+# print(f.get_value())
+# print(f.get_jacobian())
