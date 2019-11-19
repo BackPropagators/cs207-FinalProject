@@ -6,16 +6,50 @@ class Var:
     valid_types = (int, float, np.int, np.float)
 
     def __init__(self, val):
+        '''
+        Constructor of class Var
+
+        Keyword arguments:
+            -- val: A real number (int, float, np.int ot np.float)
+            TypeError is raised when val is not a real number
+
+        Initializes a Var object with two attributes:
+        -- val: represents the current evaluation of the Var object
+                type : real number
+                initial value corresponds to the input variable val (real number)
+        -- jacobian: represents the jacobian of the Var object with respect to all variables
+                     type : dictionary with variables as keys and partial derivatives as values
+                     initial value corresponds to a dictionary with 1 key, being the object itself and value 1
+        '''
+        if not isinstance(val, Var.valid_types):
+            raise TypeError('Invalid input type. ' +
+                            'Val must be any of the following types: int, float, np.int, np.float.')
         self._val = val
         self._jacobian = {self: 1}
 
     def get_value(self):
+        '''
+        Returns the val attribute of the Var object
+        Output is a real number
+        '''
         return self._val
 
     def get_jacobian(self):
+        '''
+        Returns the Jacobian of the Var object
+        Output is a list containing the partial derivatives with respect to all variables
+
+        #TODO: specificy order of variables
+
+        '''
         return list(self._jacobian.values())
 
     def get_derivative_of(self, var):
+        '''
+        Returns the partial derivative of the Var object self with respect to one of its
+        variables var
+        Output is a real number
+        '''
         if isinstance(var, Var):
             return self._jacobian[var]
         else:
@@ -23,6 +57,22 @@ class Var:
                             'var must be any of the following types: Var.')
 
     def __add__(self, other):
+        '''
+        Returns the var object that results from adding the two inputs (self + other)
+
+        If other is a Var object, returns a Var object with:
+        - A value equal to the sum of each val attribute of self and other
+        - A jacobian equal to the sum of the Jacobians
+
+        Note that when both Var objects contain different variables the Jacobian is expanded
+
+        If other is a real number (int, float, np.int, np.float), returns a Var object with:
+        - A value equal to the sum of the val attribute of and the number
+        - A jacobian equal to the jacobian of self
+
+        Raises TypeError when other is no Var object or real number
+
+        '''
         if isinstance(other, Var):
             new_val = self._val + other._val
             new_jacobian = {}
@@ -49,6 +99,18 @@ class Var:
         return new_var
 
     def __radd__(self, other):
+        '''
+        Returns the var object that results from adding the two inputs (other + self)
+
+        Other cannot be a Var object, as this case falls under __add__
+
+        If other is a real number (int, float, np.int, np.float), returns a Var object with:
+        - A value equal to the sum of the val attribute of and the number
+        - A jacobian equal to the jacobian of self
+
+        Raises TypeError when other is no real number
+
+        '''
         if isinstance(other, Var.valid_types):
             new_val = other + self._val
             new_jacobian = self._jacobian
@@ -61,6 +123,22 @@ class Var:
         return new_var
 
     def __sub__(self, other):
+        '''
+        Returns the var object that results from subtracting the two inputs (self - other)
+
+        If other is a Var object, returns a Var object with:
+        - A value equal to self.val - other.val
+        - A jacobian equal to the difference between the Jacobians of self and other
+
+        Note that when both Var objects contain different variables the Jacobian is expanded
+
+        If other is a real number (int, float, np.int, np.float), returns a Var object with:
+        - A value equal to self.val - other
+        - A jacobian equal to the jacobian of self
+
+        Raises TypeError when other is no Var object or real number
+
+        '''
         if isinstance(other, Var):
             new_val = self._val - other._val
             new_jacobian = {}
@@ -80,6 +158,18 @@ class Var:
         return new_var
 
     def __rsub__(self, other):
+        '''
+        Returns the var object that results from subtracting the two inputs (other - self)
+
+        Other cannot be a Var object, as this case falls under __sub__
+
+        If other is a real number (int, float, np.int, np.float), returns a Var object with:
+        - A value equal to other - self.val
+        - A jacobian equal to the negative jacobian of self
+
+        Raises TypeError when other is no real number
+
+        '''
         if isinstance(other, Var.valid_types):
             new_val = other - self._val
             new_jacobian = {}
@@ -96,6 +186,22 @@ class Var:
         return new_var
 
     def __mul__(self, other):
+        '''
+        Returns the var object that results from multiplying the two inputs (self*other)
+
+        If other is a Var object, returns a Var object with:
+        - A value equal to self.val*other.val
+        - A jacobian following the rule of d(uv) = udv + vdu
+
+        Note that when both Var objects contain different variables the Jacobian is expanded
+
+        If other is a real number (int, float, np.int, np.float), returns a Var object with:
+        - A value equal to self.val*other
+        - A jacobian equal to the jacobian of self multiplied by other
+
+        Raises TypeError when other is no Var object or real number
+
+        '''
         if isinstance(other, Var):
             new_val = self._val * other._val
             new_jacobian = {}
@@ -119,6 +225,18 @@ class Var:
         return new_var
 
     def __rmul__(self, other):
+        '''
+        Returns the var object that results from multiplying the two inputs (other*self)
+
+        Other cannot be a Var object, as this case falls under __mul__
+
+        If other is a real number (int, float, np.int, np.float), returns a Var object with:
+        - A value equal to other*self.val
+        - A jacobian equal to the jacobian of self multiplied by other
+
+        Raises TypeError when other is no real number
+
+        '''
         if isinstance(other, Var.valid_types):
             new_val = other * self._val
             new_jacobian = {}
@@ -135,6 +253,23 @@ class Var:
         return new_var
 
     def __truediv__(self, other):
+        '''
+        Returns the var object that results from dividing the two inputs (self/other)
+
+        If other is a Var object, returns a Var object with:
+        - A value equal to self.val/other.val
+        - A jacobian following the rule of d(u/v) = (udv - vdu)/v^2
+
+        Note that when both Var objects contain different variables the Jacobian is expanded
+
+        If other is a real number (int, float, np.int, np.float), returns a Var object with:
+        - A value equal to self.val/other
+        - A jacobian equal to the jacobian of self divided by other
+
+        Raises TypeError when other is no Var object or real number
+        Raises ZeroDivisionError when other.val or other is equal to zero
+
+        '''
         if isinstance(other, Var):
             if other._val == 0:
                 raise ZeroDivisionError("Denominator cannot be 0.")
@@ -164,6 +299,19 @@ class Var:
         return new_var
 
     def __rtruediv__(self, other):
+        '''
+        Returns the var object that results from dividing the two inputs (other/self)
+
+        Other cannot be a Var object, as this case falls under __truediv__
+
+        If other is a real number (int, float, np.int, np.float), returns a Var object with:
+        - A value equal to other/self.val
+        - A jacobian equal to other multiplied by the jacobian that follows the rule d(1/u) = -1/u^2
+
+        Raises TypeError when other is no real number
+        Raises ZeroDivisionError when self.val is equal to zero
+
+        '''
         if self._val == 0:
             raise ZeroDivisionError("Denominator cannot be 0.")
         if isinstance(other, Var.valid_types):
@@ -183,6 +331,17 @@ class Var:
 
     def __abs__(self):
         """
+        Returns the var object that results from taking teh absolute value of self
+
+        When self.val > 0, returns a Var object with:
+        - A value equal to self.val
+        - A jacobian equal self.jacobian
+
+        When self.val < 0, returns a Var object with:
+        - A value equal to -self.val
+        - A jacobian equal -self.jacobian
+
+        Raises ValueError when self.val = 0, as the derivative is then undefined
 
         :return:
 
@@ -214,6 +373,11 @@ class Var:
 
     def __neg__(self):
         """
+        Returns the negative var object of self
+
+        Returns a Var object with:
+        - A value equal to -self.val
+        - A jacobian equal -self.jacobian
 
          :return:
 
@@ -238,6 +402,22 @@ class Var:
         return new_var
 
     def __pow__(self, power, modulo=None):
+        '''
+        Returns the var object that results from taking self to the power of power (self**power)
+
+        If power is a Var object, returns a Var object with:
+        - A value equal to self.val**power.val
+        - A jacobian following the rule of d(u^v) = u^v(dv*log(u) + v*du/u)
+
+        Note that when both Var objects contain different variables the Jacobian is expanded
+
+        If power is a real number (int, float, np.int, np.float), returns a Var object with:
+        - A value equal to self.val^power
+        - A jacobian following the rule d(u^power) = power*u^(power-1)*du
+
+        Raises TypeError when power is no Var object or real number
+        Raises ValueError when self.val < 0
+        '''
         if isinstance(power, Var):
             if self._val < 0:
                 raise ValueError("The derivative of x ** y is not defined on x < 0.")
@@ -265,6 +445,18 @@ class Var:
         return new_var
 
     def __rpow__(self, other):
+        '''
+        Returns the var object that results from taking other to the power of self (other**self)
+
+        Other cannot be a Var object, as this case falls under __pow__
+
+        If other is a real number (int, float, np.int, np.float), returns a Var object with:
+        - A value equal to power^self.val
+        - A jacobian following the rule d(other^u) = other^u*log(other)du
+
+        Raises TypeError when other is no Var object or real number
+        Raises ValueError when other < 0
+        '''
         if isinstance(other, Var.valid_types):
             if other < 0:
                 raise ValueError("The derivative of b ** x, b**x * ln(b), is not defined on b < 0.")
@@ -284,6 +476,11 @@ class Var:
 
     def exp(self):
         """
+        Returns the var object that results from taking the exponent of self
+
+        Returns a Var object with:
+        - A value equal to exp(self.val)
+        - A jacobian following the rule d(exp(u)) = exp(u)*du
 
         :return:
 
