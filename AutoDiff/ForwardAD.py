@@ -182,6 +182,19 @@ class Var:
         return new_var
 
     def __abs__(self):
+        """
+
+        :return:
+
+        EXAMPLES
+        =========
+        >>> x = Var(5.0)
+        >>> f = abs(x)
+        >>> print(f.get_value())
+        5.0
+        >>> print(f.get_jacobian())
+        [1.0]
+        """
         if self._val == 0:
             raise ValueError('Derivative of abs() is not defined at 0.')
         elif self._val < 0:
@@ -200,6 +213,19 @@ class Var:
         return new_var
 
     def __neg__(self):
+        """
+
+         :return:
+
+         EXAMPLES
+         =========
+         >>> x = Var(2.0)
+         >>> f = -x
+         >>> print(f.get_value())
+         -2.0
+         >>> print(f.get_jacobian())
+         [-1.0]
+         """
         new_val = -self._val
         new_jacobian = {}
 
@@ -257,6 +283,19 @@ class Var:
         return new_var
 
     def exp(self):
+        """
+
+        :return:
+
+        EXAMPLES
+        =========
+        >>> x = Var(5.0)
+        >>> f = Var.exp(x)
+        >>> print(f.get_value())
+        148.41
+        >>> print(np.round(f.get_jacobian(), 2))
+        [148.41]
+        """
         new_val = np.exp(self._val)
         new_jacobian = {}
 
@@ -269,6 +308,19 @@ class Var:
         return new_var
 
     def log(self, b):
+        """
+
+         :return:
+
+         EXAMPLES
+         =========
+         >>> x = Var(1000)
+         >>> f = Var.log(x, 10)
+         >>> print(f.get_value())
+         3.0
+         >>> print(np.round(f.get_jacobian(), 4))
+         [0.0004]
+         """
         # b is the base. The default is e (natural log).
         if not isinstance(b, (int, np.int)):
             raise TypeError("Invalid input type. b should be any of the following type: int and numpy.int.")
@@ -287,6 +339,18 @@ class Var:
         return new_var
 
     def sqrt(self):
+        """
+         :return:
+
+         EXAMPLES
+         =========
+         >>> x = Var(9)
+         >>> f = Var.sqrt(x)
+         >>> print(f.get_value())
+         3.0
+         >>> print(np.round(f.get_jacobian(), 2))
+         0.17
+         """
         # TODO should we check self type?
         if self._val < 0:
             raise ValueError("srqt(x) is not not defined on x < 0.")
@@ -305,6 +369,17 @@ class Var:
         return new_var
 
     def sin(self):
+        """
+        :return:
+        EXAMPLES
+        =========
+        >>> x = Var(np.pi)
+        >>> f = 10e16 * Var.sin(x)
+        >>> print(np.round(f.get_value(), 2))
+        12.25
+        >>> print(np.round(f.get_jacobian(), 2))
+        [-1.e+17]
+        """
         new_val = np.sin(self._val)
         new_jacobian = {}
 
@@ -317,6 +392,17 @@ class Var:
         return new_var
 
     def arcsin(self):
+        """
+        :return:
+        EXAMPLES
+        =========
+        >>> x = Var(0)
+        >>> f = Var.arcsin(x)
+        >>> print(f.get_value())
+        0
+        >>> print(f.get_jacobian())
+        [1.0]
+        """
         if abs(self._val) > 1:
             raise ValueError("Invalid value input. arcsine is not define on |x| > 1 for real output.")
         elif self._val == 1:
@@ -336,6 +422,17 @@ class Var:
         return new_var
 
     def cos(self):
+        """
+        :return:
+        EXAMPLES
+        =========
+        >>> x = Var(np.pi)
+        >>> f = 10e16 * Var.cos(x)
+        >>> print(np.round(f.get_value(), 2))
+        -1.e+17
+        >>> print(np.round(f.get_jacobian(), 2))
+        [-12.25]
+        """
         new_val = np.cos(self._val)
         new_jacobian = {}
 
@@ -348,6 +445,17 @@ class Var:
         return new_var
 
     def arccos(self):
+        """
+        :return:
+        EXAMPLES
+        =========
+        >>> x = Var(0)
+        >>> f = Var.arccos(x)
+        >>> print(np.round(f.get_value(), 2))
+        1.57
+        >>> print(np.round(f.get_jacobian(), 2))
+        [-1.0]
+        """
         if abs(self._val) > 1:
             raise ValueError("Invalid value input. arcsin(x) is not defined on |x| > 1 for real output.")
         elif self._val == 1:
@@ -366,6 +474,17 @@ class Var:
         return new_var
 
     def tan(self):
+        """
+        :return:
+        EXAMPLES
+        =========
+        >>> x = Var(np.pi / 3)
+        >>> f = Var.tan(x)
+        >>> print(np.round(f.get_value(), 2))
+        1.73
+        >>> print(np.round(f.get_jacobian(), 2))
+        [4.0]
+        """
         if self._val % (np.pi/2) == 0 and (self._val / (np.pi/2)) % 2 != 0:
             raise ValueError("Invalid value input. tan(x) is not defined on x = (2n+1)*pi/2.")
         new_val = np.tan(self._val)
@@ -380,6 +499,17 @@ class Var:
         return new_var
 
     def arctan(self):
+        """
+        :return:
+        EXAMPLES
+        =========
+        >>> x = Var(1)
+        >>> f = Var.arctan(x)
+        >>> print(np.round(f.get_value(), 2))
+        0.79
+        >>> print(np.round(f.get_jacobian(), 2))
+        [0.5]
+        """
         new_val = np.arctan(self._val)
         new_jacobian = {}
 
@@ -392,6 +522,17 @@ class Var:
         return new_var
 
     def sinh(self):
+        """
+        :return:
+        EXAMPLES
+        =========
+        >>> x = Var(1)
+        >>> f = Var.arcsin(x)
+        >>> print(np.round(f.get_value(), 2))
+        1.18
+        >>> print(np.round(f.get_jacobian(), 2))
+        [1.54]
+        """
         new_val = np.sinh(self._val)
         new_jacobian = {}
 
@@ -404,6 +545,17 @@ class Var:
         return new_var
 
     def cosh(self):
+        """
+        :return:
+        EXAMPLES
+        =========
+        >>> x = Var(1)
+        >>> f = Var.cosh(x)
+        >>> print(np.round(f.get_value(), 2))
+        1.54
+        >>> print(np.round(f.get_jacobian(), 2))
+        [1.18]
+        """
         new_val = np.cosh(self._val)
         new_jacobian = {}
 
@@ -416,6 +568,17 @@ class Var:
         return new_var
 
     def tanh(self):
+        """
+        :return:
+        EXAMPLES
+        =========
+        >>> x = Var(1)
+        >>> f = Var.tanh(x)
+        >>> print(np.round(f.get_value(), 2))
+        0.76
+        >>> print(np.round(f.get_jacobian(), 2))
+        [0.42]
+        """
         new_val = np.tanh(self._val)
         new_jacobian = {}
 
