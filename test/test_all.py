@@ -123,7 +123,8 @@ def test_overloading():
 
     test_scalar_input()
 
-def test_scalar_input():
+
+def test_elementary():
     
     def test_negative():
         x1 = Var(2.0)
@@ -314,7 +315,7 @@ def test_composition():
 
 test_constructor()
 test_overloading()
-test_scalar_input()
+test_elementary()
 test_composition()
 
 
