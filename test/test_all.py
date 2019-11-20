@@ -1,5 +1,5 @@
 import sys
-sys.path.appen('../')
+sys.path.append('../')
 from AutoDiff.ForwardAD import Var
 import numpy as np
 import math
