@@ -1,7 +1,5 @@
 from AutoDiff.ForwardAD import Var
 import numpy as np
-import math
-import pytest
 
 def test_constructor():
     x = Var(1.0)
