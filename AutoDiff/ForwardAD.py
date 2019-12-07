@@ -586,7 +586,7 @@ class Var:
 
         INPUTS
         =======
-        self: obejct of Var
+        self: object of Var
         other: a real number (int, float, np.int, np.float), or a Var object
 
         RETURNS
@@ -1126,6 +1126,19 @@ class Var:
 
 class MultiFunc:
     def __init__(self, func_list):
+        """
+        Constructor of class MultiFunc
+
+        Keyword arguments:
+        -- func_list: a list or np.array containing Var objects
+            TypeError is raised when func_list is not a list or np.array
+            TypeError is raised when not each element in func_list is a Var object
+
+        Initializes a MultiFunc object with one attribute:
+        -- func_list: a list or np.array conatining all Var objects
+                type : list or np.array
+                initial value corresponds to the input variable func_list
+        """
         if not isinstance(func_list, (list, np.ndarray)):
             raise TypeError('Invalid input type. func_list must be a list or np.ndarray')
 
@@ -1136,12 +1149,45 @@ class MultiFunc:
         self._func_list = func_list
 
     def get_values(self):
+        """Returns a list of all val attributes corresponding to the Var objects in
+        contained in the MultiFunc object self
+
+        INPUTS
+        =======
+        self: object of MultiFunc
+
+        RETURNS
+        =======
+        val: a list of attributes Var.val, or thus a list of real numbers
+
+        EXAMPLES
+        =======
+
+        """
         val = []
         for f in self._func_list:
             val.append(f.get_value())
         return val
 
     def get_jacobian(self, var_list):
+        """
+        INPUTS
+        =======
+        self: object of MultiFunc
+        var_list: a list of Var
+
+        RETURNS
+        =======
+        jacobian: a matrix containing the partial derivatives of each function in self.func_list
+                  with respect to the Var objects listed in var_list
+                  So the element in the jacobian with index (i,j) corresponds to the partial derivative
+                  of the i-th element in self.func_list with respect to the j-th Var in var_list.
+                  This matrix only contains real values
+
+        EXAMPLES
+        =======
+
+        """
         jacobian = []
         for f in self._func_list:
             jacobian.append(f.get_der(var_list))
@@ -1154,9 +1200,44 @@ class MultiFunc:
         pass
 
     def __len__(self):
+        """
+        INPUTS
+        =======
+        self: object of MultiFunc
+
+        RETURNS
+        =======
+        the length of the attribute func_list, or the dimension of the multifunction object self
+
+        EXAMPLES
+        =======
+        """
         return len(self._func_list)
 
     def __add__(self, other):
+        """Returns the MultiFunc object that results from adding the two inputs (self + other)
+
+        INPUTS
+        =======
+        self: object of MultiFunc
+        other: a float or integer number, a Var object or a Multifunc object
+
+        RETURNS
+        =======
+        MultiFunc(new_func_list): an object of MultiFunc
+
+            If other is a MultiFunc object, returns a MultiFunc object with:
+            - for func_list an array of Var objects added to the corresponding
+              Var objects in other - so element-wise
+
+            If other is not a MultiFunc object, returns a MultiFunc object with:
+            - for func_list an array of the Var objects in self.func_list added to other
+
+        EXAMPLES
+        =========
+
+        Raises ValueError when other is a MultiFunc object with other dimensions than self
+        """
         new_func_list = []
         if isinstance(other, MultiFunc):
             if len(self) == len(other):
@@ -1171,6 +1252,25 @@ class MultiFunc:
         return MultiFunc(new_func_list)
 
     def __radd__(self, other):
+        """Returns the MultiFunc object that results from adding the two inputs (other + self)
+
+        INPUTS
+        =======
+        self: object of MultiFunc
+        other: a float or integer number or a Var object
+
+        RETURNS
+        =======
+        MultiFunc(new_func_list): an object of MultiFunc
+
+            Other cannot be a MultiFunc object, as this case falls under __add__
+
+            If other is not a MultiFunc object, returns a MultiFunc object with:
+            - for func_list an array of the Var objects in self.func_list added to other
+
+        EXAMPLES
+        =========
+        """
         new_func_list = []
         for i in range(len(self)):
             new_func_list.append(other + self._func_list[i])
@@ -1178,6 +1278,29 @@ class MultiFunc:
         return MultiFunc(new_func_list)
 
     def __sub__(self, other):
+        """Returns the MultiFunc object that results from subtracting the two inputs (self - other)
+
+        INPUTS
+        =======
+        self: object of MultiFunc
+        other: a float or integer number, a Var object or a Multifunc object
+
+        RETURNS
+        =======
+        MultiFunc(new_func_list): an object of MultiFunc
+
+            If other is a MultiFunc object, returns a MultiFunc object with:
+            - for func_list an array of Var objects minus the corresponding
+              Var objects in other - so element-wise
+
+            If other is not a MultiFunc object, returns a MultiFunc object with:
+            - for func_list an array of the Var objects in self.func_list added minus other
+
+        EXAMPLES
+        =========
+
+        Raises ValueError when other is a MultiFunc object with other dimensions than self
+        """
         new_func_list = []
         if isinstance(other, MultiFunc):
             if len(self) == len(other):
@@ -1192,6 +1315,25 @@ class MultiFunc:
         return MultiFunc(new_func_list)
 
     def __rsub__(self, other):
+        """Returns the MultiFunc object that results from subtracting the two inputs (other - self)
+
+        INPUTS
+        =======
+        self: object of MultiFunc
+        other: a float or integer number or a Var object
+
+        RETURNS
+        =======
+        MultiFunc(new_func_list): an object of MultiFunc
+
+            Other cannot be a MultiFunc object, as this case falls under __sub__
+
+            If other is not a MultiFunc object, returns a MultiFunc object with:
+            - for func_list an array of other minus the Var objects in self.func_list
+
+        EXAMPLES
+        =========
+        """
         new_func_list = []
         for i in range(len(self)):
             new_func_list.append(other - self._func_list[i])
@@ -1199,6 +1341,29 @@ class MultiFunc:
         return MultiFunc(new_func_list)
 
     def __mul__(self, other):
+        """Returns the MultiFunc object that results from multiplying the two inputs (self*other)
+
+        INPUTS
+        =======
+        self: object of MultiFunc
+        other: a float or integer number, a Var object or a Multifunc object
+
+        RETURNS
+        =======
+        MultiFunc(new_func_list): an object of MultiFunc
+
+            If other is a MultiFunc object, returns a MultiFunc object with:
+            - for func_list an array of Var objects multiplied by the corresponding
+              Var objects in other - so element-wise
+
+            If other is not a MultiFunc object, returns a MultiFunc object with:
+            - for func_list an array of the Var objects in self.func_list mulitplied by other
+
+        EXAMPLES
+        =========
+
+        Raises ValueError when other is a MultiFunc object with other dimensions than self
+        """
         new_func_list = []
         if isinstance(other, MultiFunc):
             if len(self) == len(other):
@@ -1213,6 +1378,25 @@ class MultiFunc:
         return MultiFunc(new_func_list)
 
     def __rmul__(self, other):
+        """Returns the MultiFunc object that results from multiplying the two inputs (other*self)
+
+        INPUTS
+        =======
+        self: object of MultiFunc
+        other: a float or integer number or a Var object
+
+        RETURNS
+        =======
+        MultiFunc(new_func_list): an object of MultiFunc
+
+            Other cannot be a MultiFunc object, as this case falls under __mul__
+
+            If other is not a MultiFunc object, returns a MultiFunc object with:
+            - for func_list an array of other multiplied by the Var objects in self.func_list
+
+        EXAMPLES
+        =========
+        """
         new_func_list = []
         for i in range(len(self)):
             new_func_list.append(other * self._func_list[i])
@@ -1220,6 +1404,29 @@ class MultiFunc:
         return MultiFunc(new_func_list)
 
     def __truediv__(self, other):
+        """Returns the MultiFunc object that results from dividing the two inputs (self/other)
+
+        INPUTS
+        =======
+        self: object of MultiFunc
+        other: a float or integer number, a Var object or a Multifunc object
+
+        RETURNS
+        =======
+        MultiFunc(new_func_list): an object of MultiFunc
+
+            If other is a MultiFunc object, returns a MultiFunc object with:
+            - for func_list an array of Var objects divided by the corresponding
+              Var objects in other - so element-wise
+
+            If other is not a MultiFunc object, returns a MultiFunc object with:
+            - for func_list an array of the Var objects in self.func_list divided by other
+
+        EXAMPLES
+        =========
+
+        Raises ValueError when other is a MultiFunc object with other dimensions than self
+        """
         new_func_list = []
         if isinstance(other, MultiFunc):
             if len(self) == len(other):
@@ -1234,17 +1441,183 @@ class MultiFunc:
         return MultiFunc(new_func_list)
 
     def __rtruediv__(self, other):
+        """Returns the MultiFunc object that results from dividing the two inputs (other/self)
+
+        INPUTS
+        =======
+        self: object of MultiFunc
+        other: a float or integer number or a Var object
+
+        RETURNS
+        =======
+        MultiFunc(new_func_list): an object of MultiFunc
+
+            Other cannot be a MultiFunc object, as this case falls under __truediv__
+
+            If other is not a MultiFunc object, returns a MultiFunc object with:
+            - for func_list an array of other divided by the Var objects in self.func_list
+
+        EXAMPLES
+        =========
+        """
         new_func_list = []
         for i in range(len(self)):
             new_func_list.append(other / self._func_list[i])
 
         return MultiFunc(new_func_list)
 
+    def __abs__(self):
+        """Returns the MultiFunc object that contains all the absolute values of the Var obejcts in self.func_list
+
+        INPUTS
+        =======
+        self: object of MultiFunc
+
+        RETURNS
+        =======
+        MultiFunc(new_func_list): an object of MultiFunc
+
+            Returns a MultiFunc object with:
+            - for func_list an array of the absolute values of all individual Var objects in self.func_list
+        EXAMPLES
+        =========
+        """
+
+        new_func_list = []
+        for i in range(len(self)):
+            new_func_list.append(abs(self._func_list[i]))
+
+        return MultiFunc(new_func_list)
+
+    def __neg__(self):
+        """Returns the MultiFunc object that contains all the opposite values of the Var obejcts in self.func_list
+
+        INPUTS
+        =======
+        self: object of MultiFunc
+
+        RETURNS
+        =======
+        MultiFunc(new_func_list): an object of MultiFunc
+
+            Returns a MultiFunc object with:
+            - for func_list an array of the opposite values of all individual Var objects in self.func_list
+        EXAMPLES
+        =========
+        """
+        new_func_list = []
+        for i in range(len(self)):
+            new_func_list.append(-self._func_list[i])
+
+        return MultiFunc(new_func_list)
+
+    def __pow__(self, power):
+        """Returns the MultiFunc object that results from taking self to the power of power (self**power)
+
+        INPUTS
+        =======
+        self: object of MultiFunc
+        power: a real number (int, float, np.int, np.float), a Var object or a MultiFunc object
+
+        RETURNS
+        =======
+        MultiFunc(new_func_list): an object of MultiFunc
+
+            If power is a MultiFunc object, returns a MultiFunc object with:
+            - for func_list an array of Var objects of self raised to the corresponding
+              Var objects in power - so element-wise
+
+            If power is not a MultiFunc object, returns a MultiFunc object with:
+            - for func_list an array of Var objects of self raised to the specified power
+
+        EXAMPLES
+        =========
+
+        Raises ValueError when power is a MultiFunc object with other dimensions than self
+        """
+
+        new_func_list = []
+        if isinstance(power, MultiFunc):
+            if len(self) == len(power):
+                for i in range(len(self)):
+                    new_func_list.append(self._func_list[i] ** power._func_list[i])
+            else:
+                raise ValueError("Dimensions of the MultiFunc objects are not equal.")
+        else:
+            for i in range(len(self)):
+                new_func_list.append(self._func_list[i] ** power)
+
+        return MultiFunc(new_func_list)
+
+    def __rpow__(self, other):
+        """Returns the MultiFunc object that results from taking other to the power of self (other**self)
+
+        INPUTS
+        =======
+        self: object of MultiFunc
+        other: a real number (int, float, np.int, np.float), a Var object or a MultiFunc object
+
+        RETURNS
+        =======
+        MultiFunc(new_func_list): an object of MultiFunc
+
+            Other cannot be a MultiFunc object, as this case falls under __pow__
+
+            Returns a MultiFunc object with:
+            - for func_list an array of Var objects of self raised to the specified power
+
+        EXAMPLES
+        =========
+
+        """
+        new_func_list = []
+        for i in range(len(self)):
+            new_func_list.append(other ** self._func_list[i])
+
+        return MultiFunc(new_func_list)
+
+    def apply(self, func):
+        """Returns the MultiFunc object that results from element-wisely apply the function func to all
+        elements in MultiFunc
+
+        INPUTS
+        =======
+        self: object of MultiFunc
+        func: a non-dunder mtehod of the class Var
+
+        Includes: Var.exp, Var.sqrt, Var.sin, Var.arcsin, Var.cos, Var.arccos
+                  Var.tan, Var.arctan, Var.sinh, Var.cosh, Var.tanh
+
+                  Note that when a variable b should be specified in Var.log, the user should
+                  input a lambda function lambda x: Var.log(x,b)
+
+
+        RETURNS
+        =======
+        MultiFunc(new_func_list): an object of MultiFunc
+
+            Returns a MultiFunc object with:
+            - for func_list an array of the function func applied to all individual Var objects in self.func_list
+
+        EXAMPLES
+        =========
+
+        """
+
+        new_func_list = []
+        for i in range(len(self)):
+            new_func_list.append(func(self._func_list[i]))
+
+        return MultiFunc(new_func_list)
 
 # x = Var(1)
 # y = Var(1)
 # z = Var(1)
 # func_list = [x+y, x+y+z]
 # multi_func = MultiFunc(func_list)
+# print(multi_func.get_values())
+# print(multi_func.get_jacobian([x,y,z]))
+#
+# new_f = multi_func.apply(Var.sin)
 # print(multi_func.get_values())
 # print(multi_func.get_jacobian([x,y,z]))
