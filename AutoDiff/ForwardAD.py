@@ -5,9 +5,6 @@ import math
 class Var:
     valid_types = (int, float, np.int, np.float)
 
-    def __hash__(self):
-        return hash(self._val)
-
     def __init__(self, val):
         """
         Constructor of class Var
