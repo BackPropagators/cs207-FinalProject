@@ -69,7 +69,6 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'Newton', max_iter
             # get gradient
             current_der = current.get_der(var_list)
             current_val = current.get_value()
-
             norm_der = np.linalg.norm(current_der)
 
             while n_iter <= max_iter and norm_der >= tolerance:
@@ -91,7 +90,48 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'Newton', max_iter
             return opt_val, current_val, n_iter
 
         elif solver == 'BFGS':
-            pass
+            n_iter = 0
+
+            # get current evaluation of f at initial guess
+            current = func(var_list)
+
+            # get gradient
+            current_der = current.get_der(var_list)
+            current_val = current.get_value()
+            norm_der = np.linalg.norm(current_der)
+
+            # initialize B
+            B = np.identity(len(var_list))
+
+            while n_iter <= max_iter and norm_der >= tolerance:
+                current = func(var_list)
+                current_der = current.get_der(var_list)
+                current_val = current.get_value()
+
+                B_inv = np.linalg.inv(B)
+                step = np.dot(B_inv, -np.array(current_der)).reshape(2,1)
+
+                for i, var in enumerate(var_list):
+                    var.set_value((var + step[i][0]).get_value())
+
+                # compute new B
+                new = func(var_list)
+                new_der = new.get_der(var_list)
+                y_k = np.array(new_der).reshape(2,1) - np.array(current_der).reshape(2,1)
+                delta_B_1 = (y_k*y_k.T)/np.dot(y_k.T,step)[0]
+                delta_B_2 = np.dot(np.dot(B,step),np.dot(step.T,B))/np.dot(step.T, np.dot(B,step))[0][0]
+                B = B + delta_B_1 - delta_B_2
+
+                norm_der = np.linalg.norm(current_der)
+
+                n_iter += 1
+
+            opt_val = []
+            for var in var_list:
+                opt_val.append(var.get_value())
+
+            return opt_val, current_val, n_iter
+
 
         else:
             raise ValueError('No other solvers are built-in. Please choose the default Newton, GS or BFGS')
@@ -105,6 +145,6 @@ var_list = [x,y,z]
 
 def f(vars):
     x,y = vars
-    return (Var.sin(x)-1)**4 + (y-4)**2
+    return (Var.sin(x)-1 + Var.log(y, np.e))**4 + (y-4)**2
 
-print(optimize(f, [0,1], solver = 'GS', max_iter=10000, gs_lr=0.2))
+print(optimize(f, [0,1], solver = 'BFGS', max_iter=200, gs_lr=0.2))

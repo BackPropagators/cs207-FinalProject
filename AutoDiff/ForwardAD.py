@@ -742,7 +742,7 @@ class Var:
         new_var._der = new_der
         return new_var
 
-    def log(self, b):
+    def log(self, b = np.e):
         """
         INPUTS
         =======
@@ -765,12 +765,15 @@ class Var:
          >>> print(np.round(f.get_der(), 4))
          [0.0004]
 
-         Raises TypeError when b is not an integer
+         Raises TypeError when b is not an int, float, np.int, np.float
+         Raises ValueError when b <= 0
          Raises ValueError when self._val <= 0
          """
         # b is the base. The default is e (natural log).
-        if not isinstance(b, (int, np.int)):
-            raise TypeError("Invalid input type. b should be any of the following type: int and numpy.int.")
+        if not isinstance(b, Var.valid_types):
+            raise TypeError("Invalid input type. b must be any of the following types: int, float, np.int, np.float.")
+        if b <= 0:
+            raise ValueError("Invalid input. b must <= 0.")
         if self._val <= 0:
             raise ValueError("log(x) is not defined on x <= 0.")
 
