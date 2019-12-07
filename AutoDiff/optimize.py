@@ -33,9 +33,32 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'Newton', max_iter
 
         2. Gradient Descent
 
+            - start with initial guess x_0
+            - while convergence criterium not met for x_k:
+                compute gradient
+                update x_(k+1) = x_k - learning_rate*gradient
+                x_k = x_(k+1)
+            - return result
 
         3. BFGS
 
+            - start with initial guess x_0 and B_0 = indentity matrix
+            - while convergence criterium not met for x_k:
+                compute gradient
+                solve linear system B_k*s_k = - gradient for step s_k
+                compute x_(k+1) = x_k + s_k
+                update x_k = x_(k+1)
+
+                compute gradient at x_k
+                y_k = new_gradient - old_gradient
+                compute Delta_B = (y_k*y_k.T)/(y_k.T*s_k) - (B_k*s_k*s_k.T*B)/(s_k.T*B_k*s_k)
+                compute B_(k+1) = B_k + Delta_B
+                update B_k = B_(k+1)
+
+            - return result
+
+            Note that B_k tends to approach the Hessian for multiple iterations, so approaches the Newton's method
+            Better performance than gradient descent, but worse than Newton's method is expected
 
         RETURNS
         =======
@@ -122,7 +145,7 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'Newton', max_iter
                 delta_B_2 = np.dot(np.dot(B,step),np.dot(step.T,B))/np.dot(step.T, np.dot(B,step))[0][0]
                 B = B + delta_B_1 - delta_B_2
 
-                norm_der = np.linalg.norm(current_der)
+                norm_der = np.linalg.norm(step)
 
                 n_iter += 1
 
