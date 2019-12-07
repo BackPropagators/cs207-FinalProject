@@ -5,6 +5,9 @@ import math
 class Var:
     valid_types = (int, float, np.int, np.float)
 
+    def __hash__(self):
+        return hash(self._val)
+
     def __init__(self, val):
         """
         Constructor of class Var
@@ -45,6 +48,29 @@ class Var:
         5.0
         """
         return self._val
+
+    def set_value(self, value):
+        """
+        Sets the _val attribute of the Var object equal to value
+        and reinitializes its derivative to 1.0
+        INPUTS
+        =======
+        self: object of Var
+        value : real number
+
+        RETURNS
+        =======
+        None
+
+        EXAMPLES
+        =======
+        """
+        if not isinstance(value, Var.valid_types):
+            raise TypeError('Invalid input type. ' +
+                            'Value must be any of the following types: int, float, np.int, np.float.')
+        self._val = value
+        self._der = {self: 1.0}
+        return None
 
     def get_der(self, var_list=None):
         """
@@ -1135,7 +1161,7 @@ class MultiFunc:
             TypeError is raised when not each element in func_list is a Var object
 
         Initializes a MultiFunc object with one attribute:
-        -- func_list: a list or np.array conatining all Var objects
+        -- func_list: a list or np.array containing all Var objects
                 type : list or np.array
                 initial value corresponds to the input variable func_list
         """
@@ -1619,5 +1645,5 @@ class MultiFunc:
 # print(multi_func.get_jacobian([x,y,z]))
 #
 # new_f = multi_func.apply(Var.sin)
-# print(multi_func.get_values())
-# print(multi_func.get_jacobian([x,y,z]))
+# print(new_f.get_values())
+# print(new_f.get_jacobian([x,y,z]))
