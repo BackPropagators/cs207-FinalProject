@@ -125,12 +125,12 @@ class Var:
             raise TypeError('Invalid input type. ' +
                             'var must be any of the following types: Var.')
 
-    def __eq__(self, other):
-        pass
-
-
-    def __ne__(self, other):
-        pass
+    # def __eq__(self, other):
+    #     pass
+    #
+    #
+    # def __ne__(self, other):
+    #     pass
 
     def __add__(self, other):
         """Returns the var object that results from adding the two inputs (self + other)
@@ -1647,3 +1647,8 @@ class MultiFunc:
 # new_f = multi_func.apply(Var.sin)
 # print(new_f.get_values())
 # print(new_f.get_jacobian([x,y,z]))
+
+x = Var(1.0)
+# assert x.get_value() == 1.0
+# assert type(x.get_value()) == float
+# assert x.get_der() == [1.0]
