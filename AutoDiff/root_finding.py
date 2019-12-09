@@ -1,4 +1,4 @@
-from AutoDiff.ForwardAD import Var, MultiFunc
+from ForwardAD import Var, MultiFunc
 import numpy as np
 import math
 
@@ -28,16 +28,17 @@ def Newton(func, guess, tol = 10**(-8), max_iter = 2000):
         # >>> f = lambda x: x**2-1
         # >>> guess = 2
         # >>> root = Newton(f, guess)
-          1
+          1.0
     '''
     xcur = Var(guess)
     fxcur = func(xcur)
-    xnext = xcur - fxcur/fxcur.get_der()
+    xnext = xcur - Var(fxcur.get_value()/fxcur.get_der()[0])
     err = abs(xnext.get_value()-xcur.get_value())
     i = 0
-    while err < tol:
+    while err > tol:
         xcur = xnext
-        xnext = xcur - fxcur/fxcur._get_derivative_of(x)
+        fxcur = func(xcur)
+        xnext = xcur - Var(fxcur.get_value()/fxcur.get_der()[0])
         err = abs(xnext.get_value()-xcur.get_value())
         i += 1
         if i > max_iter:
