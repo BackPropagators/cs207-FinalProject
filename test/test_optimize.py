@@ -96,7 +96,7 @@ def test_BFGS_4():
                                                           solver="BFGS", max_iter=10000, gd_lr=0.2)
 
         assert ((np.allclose(opt_val, [3, 2]) and np.allclose(current_val, [0])) or
-                (np.allclose(opt_val, [2.805118, 3.131312]) and np.allclose(current_val, [0])) or
+                (np.allclose(opt_val, [-2.805118, 3.131312]) and np.allclose(current_val, [0])) or
                 (np.allclose(opt_val, [-3.779310, -3.283186]) and np.allclose(current_val, [0])) or
                 (np.allclose(opt_val, [3.584428, -1.848126]) and np.allclose(current_val, [0])) or
                 (np.allclose(opt_val, [-0.270845, -0.923039]) and np.allclose(current_val, [181.617])))
@@ -195,7 +195,7 @@ def test_GD_4():
                                                           solver="GD", max_iter=10000, gd_lr=0.02)
 
         assert ((np.allclose(opt_val, [3, 2]) and np.allclose(current_val, [0])) or
-                (np.allclose(opt_val, [2.805118, 3.131312]) and np.allclose(current_val, [0])) or
+                (np.allclose(opt_val, [-2.805118, 3.131312]) and np.allclose(current_val, [0])) or
                 (np.allclose(opt_val, [-3.779310, -3.283186]) and np.allclose(current_val, [0])) or
                 (np.allclose(opt_val, [3.584428, -1.848126]) and np.allclose(current_val, [0])) or
                 (np.allclose(opt_val, [-0.270845, -0.923039]) and np.allclose(current_val, [181.617])))
