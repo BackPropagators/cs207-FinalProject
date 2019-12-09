@@ -639,7 +639,6 @@ def test_elementary_scalar_input_vector_output():
 
 
 def test_elementary_vector_input_vector_output():
-
     def suite_neg():
         x = Var(1.0)
         y = Var(2.0)
@@ -650,7 +649,7 @@ def test_elementary_vector_input_vector_output():
         np.testing.assert_array_equal(np.round(f1.get_der([x,y,z]), 2), np.array([[-2., -1., 0.],
                                                                           [0., -12., -5.55],
                                                                           [0., 0., -3.]]))
-#
+
     def suite_abs():
         x = Var(1.0)
         y = Var(2.0)
@@ -821,3 +820,7 @@ def test_elementary_vector_input_vector_output():
     suite_log()
     suite_exp()
     suite_logistic()
+
+test_elementary_multivariate_input_scalar_output()
+test_elementary_scalar_input_vector_output()
+test_elementary_vector_input_vector_output()
