@@ -100,7 +100,7 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'Newton', max_iter
                 current_val = current.get_value()
 
                 for i, var in enumerate(var_list):
-                    var.set_value((var - gs_lr*current_der[i]).get_value())
+                    var._set_value((var - gs_lr*current_der[i]).get_value())
 
                 norm_der = np.linalg.norm(current_der)
 
