@@ -626,7 +626,7 @@ class Var:
         Raises ValueError when self._val < 0
         """
         if isinstance(power, Var):
-            if self._val < 0:
+            if not isinstance(power, Constant) & self._val < 0 :
                 raise ValueError("The derivative of x ** y is not defined on x < 0.")
             new_val = self._val ** power._val
 
