@@ -1,4 +1,4 @@
-from ForwardAD import Var, MultiFunc
+from AutoDiff.ForwardAD import Var, MultiFunc
 import numpy as np
 import types
 
