@@ -12,7 +12,8 @@ def test_BFGS_1():
                 x = vars
                 return x ** 2 + 1
             opt_val, current_val, n_iter, norm_der = optimize(f, [initial_guess],
-                                                              solver = "BFGS", max_iter=10000, gd_lr=0.2)
+                                                              solver = "BFGS", max_iter=10000, gd_lr=0.2
+                                                              , tolerance=10e-9)
 
             assert np.allclose(opt_val, [0])
             assert np.allclose(current_val, [1])
@@ -27,7 +28,7 @@ def test_BFGS_1():
 
             opt_val, current_val, n_iter, norm_der = optimize(f, [initial_guess_x,
                                                                   initial_guess_y], solver="BFGS",
-                                                              max_iter=10000, gd_lr=0.2)
+                                                              max_iter=10000, gd_lr=0.2, tolerance=10e-9)
             assert np.allclose(opt_val, [0, 0])
             assert np.allclose(current_val, [2])
 
@@ -42,7 +43,7 @@ def test_BFGS_1():
             opt_val, current_val, n_iter, norm_der = optimize(f, [initial_guess_x,
                                                                   initial_guess_y,
                                                                   initial_guess_z], solver="BFGS",
-                                                              max_iter=10000, gd_lr=0.2)
+                                                              max_iter=10000, gd_lr=0.2, tolerance=10e-9)
             assert np.allclose(opt_val, [0, 0, 0])
             assert np.allclose(current_val, [3])
 
@@ -61,7 +62,8 @@ def test_BFGS_2():
                 return (3 - x) ** 2 + 2 * (y - x ** 2) ** 2
 
             opt_val, current_val, n_iter, norm_der = optimize(f, [initial_guess_x, initial_guess_y],
-                                                              solver="BFGS", max_iter=10000, gd_lr=0.2)
+                                                              solver="BFGS", max_iter=10000, gd_lr=0.2,
+                                                              tolerance=10e-9)
 
             assert np.allclose(opt_val, [3, 9])
             assert np.allclose(current_val, [0])
@@ -77,7 +79,7 @@ def test_BFGS_3():
             return -Var.cos(x)*Var.cos(y)*Var.exp(-((x - np.pi)**2 + (y - np.pi)**2))
 
         opt_val, current_val, n_iter, norm_der = optimize(f, [initial_guess_x, initial_guess_y],
-                                                          solver="BFGS", max_iter=10000, gd_lr=0.2)
+                                                          solver="BFGS", max_iter=10000, gd_lr=0.2, tolerance=10e-9)
 
         assert np.allclose(opt_val, [np.pi, np.pi])
 
@@ -93,7 +95,7 @@ def test_BFGS_4():
             return (x ** 2 + y - 11)**2 + (x + y ** 2 - 7) ** 2
 
         opt_val, current_val, n_iter, norm_der = optimize(f, [initial_guess_x, initial_guess_y],
-                                                          solver="BFGS", max_iter=10000, gd_lr=0.2)
+                                                          solver="BFGS", max_iter=10000, gd_lr=0.2, tolerance=10e-9)
 
         assert ((np.allclose(opt_val, [3, 2]) and np.allclose(current_val, [0])) or
                 (np.allclose(opt_val, [-2.805118, 3.131312]) and np.allclose(current_val, [0])) or
@@ -112,7 +114,8 @@ def test_GD_1():
                 x = vars
                 return x ** 2 + 1
             opt_val, current_val, n_iter, norm_der = optimize(f, [initial_guess],
-                                                              solver = "GD", max_iter=10000, gd_lr = 0.2)
+                                                              solver = "GD", max_iter=10000, gd_lr = 0.2,
+                                                              tolerance=10e-9)
 
             assert np.allclose(opt_val, [0])
             assert np.allclose(current_val, [1])
@@ -127,7 +130,7 @@ def test_GD_1():
 
             opt_val, current_val, n_iter, norm_der = optimize(f, [initial_guess_x,
                                                                   initial_guess_y], solver="GD",
-                                                              max_iter=10000, gd_lr=0.2)
+                                                              max_iter=10000, gd_lr=0.2, tolerance=10e-9)
             assert np.allclose(opt_val, [0, 0])
             assert np.allclose(current_val, [2])
 
@@ -142,7 +145,7 @@ def test_GD_1():
             opt_val, current_val, n_iter, norm_der = optimize(f, [initial_guess_x,
                                                                   initial_guess_y,
                                                                   initial_guess_z], solver="GD",
-                                                              max_iter=10000, gd_lr=0.2)
+                                                              max_iter=10000, gd_lr=0.2, tolerance=10e-9)
             assert np.allclose(opt_val, [0, 0, 0])
             assert np.allclose(current_val, [3])
 
@@ -162,7 +165,8 @@ def test_GD_2():
                 return x ** 2 + (y - x ** 2) ** 2
 
             opt_val, current_val, n_iter, norm_der = optimize(f, [initial_guess_x, initial_guess_y],
-                                                              solver="GD", max_iter=10000, gd_lr=0.02)
+                                                              solver="GD", max_iter=10000, gd_lr=0.02,
+                                                              tolerance=10e-9)
 
             assert np.allclose(opt_val, [0, 0])
             assert np.allclose(current_val, [0])
@@ -177,7 +181,8 @@ def test_GD_3():
             return -Var.cos(x)*Var.cos(y)*Var.exp(-((x - np.pi)**2 + (y - np.pi)**2))
 
         opt_val, current_val, n_iter, norm_der = optimize(f, [initial_guess_x, initial_guess_y],
-                                                          solver="GD", max_iter=20000, gd_lr=0.02)
+                                                          solver="GD", max_iter=20000, gd_lr=0.02,
+                                                          tolerance=10e-9)
 
         assert np.allclose(opt_val, [np.pi, np.pi])
 
@@ -192,7 +197,7 @@ def test_GD_4():
             return (x ** 2 + y - 11)**2 + (x + y ** 2 - 7) ** 2
 
         opt_val, current_val, n_iter, norm_der = optimize(f, [initial_guess_x, initial_guess_y],
-                                                          solver="GD", max_iter=10000, gd_lr=0.02)
+                                                          solver="GD", max_iter=10000, gd_lr=0.02, tolerance=10e-9)
 
         assert ((np.allclose(opt_val, [3, 2]) and np.allclose(current_val, [0])) or
                 (np.allclose(opt_val, [-2.805118, 3.131312]) and np.allclose(current_val, [0])) or
