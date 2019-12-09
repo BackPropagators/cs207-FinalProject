@@ -83,7 +83,10 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'BFGS', max_iter =
             n_iter = 0
 
             # get current evaluation of f at initial guess
-            current = func(var_list)
+            if len(var_list) == 1:
+                current = func(var_list[0])
+            else:
+                current = func(var_list)
 
             # get gradient
             current_der = current.get_der(var_list)
@@ -91,7 +94,10 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'BFGS', max_iter =
             norm_der = np.linalg.norm(current_der)
 
             while n_iter <= max_iter and norm_der >= tolerance:
-                current = func(var_list)
+                if len(var_list) == 1:
+                    current = func(var_list[0])
+                else:
+                    current = func(var_list)
                 current_der = current.get_der(var_list)
                 current_val = current.get_value()
 
@@ -112,7 +118,10 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'BFGS', max_iter =
             n_iter = 0
 
             # get current evaluation of f at initial guess
-            current = func(var_list)
+            if len(var_list) == 1:
+                current = func(var_list[0])
+            else:
+                current = func(var_list)
 
             # get gradient
             current_der = current.get_der(var_list)
@@ -123,7 +132,10 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'BFGS', max_iter =
             B = np.identity(len(var_list))
 
             while n_iter <= max_iter and norm_der >= tolerance:
-                current = func(var_list)
+                if len(var_list) == 1:
+                    current = func(var_list[0])
+                else:
+                    current = func(var_list)
                 current_der = current.get_der(var_list)
                 current_val = current.get_value()
 
@@ -134,7 +146,10 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'BFGS', max_iter =
                     var._set_value((var + step[i][0]).get_value())
 
                 # compute new B
-                new = func(var_list)
+                if len(var_list) == 1:
+                    new = func(var_list[0])
+                else:
+                    new = func(var_list)
                 new_der = new.get_der(var_list)
                 y_k = np.array(new_der).reshape(len(var_list),1) - np.array(current_der).reshape(len(var_list),1)
                 delta_B_1 = (y_k*y_k.T)/np.dot(y_k.T,step)[0]
