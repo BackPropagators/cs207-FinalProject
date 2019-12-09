@@ -1,4 +1,4 @@
-from ForwardAD import Var, MultiFunc
+from AutoDiff.ForwardAD import Var, MultiFunc
 import numpy as np
 
 def test_constructor():
@@ -843,4 +843,3 @@ def test_elementary_vector_input_vector_output():
     suite_log()
     suite_exp()
     suite_logistic()
-
