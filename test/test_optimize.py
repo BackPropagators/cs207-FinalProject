@@ -79,7 +79,7 @@ def test_BFGS_3():
         opt_val, current_val, n_iter, norm_der = optimize(f, [initial_guess_x, initial_guess_y],
                                                           solver="BFGS", max_iter=10000, gd_lr=0.2)
 
-        assert np.allclose(opt_val, [np.pi/2, np.pi/2])
+        assert np.allclose(opt_val, [np.pi, np.pi])
 
 
 def test_BFGS_4():
