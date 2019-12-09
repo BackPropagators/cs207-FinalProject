@@ -626,7 +626,7 @@ class Var:
         Raises ValueError when self._val < 0
         """
         if isinstance(power, Var):
-            if not isinstance(power, Constant) & self._val < 0 :
+            if (not isinstance(power, Constant)) & self._val < 0 :
                 raise ValueError("The derivative of x ** y is not defined on x < 0.")
             new_val = self._val ** power._val
 
@@ -638,8 +638,10 @@ class Var:
             new_der = [None] * len(new_var_list)
 
             for i, var in enumerate(new_var_list):
-                new_der[i] = new_val * \
-                                    (power._get_derivative_of(var) * np.log(self._val) +
+                if power._get_derivative_of(var) == 0.0:
+                    new_der[i] = new_val * (power._val * self._get_derivative_of(var) / self._val)
+                else:
+                    new_der[i] = new_val * (power._get_derivative_of(var) * np.log(self._val) +
                                      power._val * self._get_derivative_of(var) / self._val)
         elif isinstance(power, Var.valid_types):
             return self ** Constant(power)
@@ -1657,3 +1659,7 @@ class Constant(Var):
 # new_f = multi_func.apply(Var.sin)
 # print(new_f.get_values())
 # print(new_f.get_jacobian([x,y,z]))
+
+x = Var(-1)
+f = x**2
+f.get_der()
