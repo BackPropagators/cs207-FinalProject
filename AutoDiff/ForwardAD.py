@@ -6,33 +6,38 @@ class Var:
     valid_types = (int, float, np.int, np.float)
 
     def __init__(self, val):
-        """
-        Constructor of class Var
+        """Initializes a Var object with three private attributes: self._val, self._var_list and self._der
 
-        Keyword arguments:
-        -- val: A real number (int, float, np.int ot np.float)
-            TypeError is raised when val is not a real number
+        INPUTS
+        =======
+        self: a Var object
+        val: a real number (int, float, np.int ot np.float)
 
-        Initializes a Var object with two attributes:
-        -- val: represents the current evaluation of the Var object
-                type : real number
-                initial value corresponds to the input variable val (real number)
-        -- der: represents the partial derivative of the Var object with respect to all variables
-                     type : dictionary with variables as keys and partial derivatives as values
-                     initial value corresponds to a dictionary with 1 key, being the object itself and value 1
+        RETURNS
+        =======
+        None
+
+        Raises TypeError when val is not a real number
         """
         if not isinstance(val, Var.valid_types):
             raise TypeError('Invalid input type. ' +
                             'Val must be any of the following types: int, float, np.int, np.float.')
+
+        # the current evaluation of the Var object
         self._val = val
-        self._der = {self: 1.0}
+
+        # a list storing the current variables
+        self._var_list = [self]
+
+        # a list storing the partial derivatives of the Var with respect to the current variables
+        self._der = [1.0]
 
     def get_value(self):
-        """Returns the val attribute of the Var object
+        """Returns the _val attribute of the Var object
 
         INPUTS
         =======
-        self: object of Var
+        self: a Var object
 
         RETURNS
         =======
@@ -40,20 +45,18 @@ class Var:
 
         EXAMPLES
         =======
-        >>> x = Var(5.0)
-        >>> x.get_value()
+        # >>> x = Var(5.0)
+        # >>> x.get_value()
         5.0
         """
         return self._val
 
-    def set_value(self, value):
-        """
-        Sets the _val attribute of the Var object equal to value
-        and reinitializes its derivative to 1.0
+    def _set_value(self, value):
+        """Sets the _val attribute of the Var object equal to value and _der attribute to [1.0]
         INPUTS
         =======
-        self: object of Var
-        value : real number
+        self: a Var object
+        value : a real number
 
         RETURNS
         =======
@@ -61,314 +64,367 @@ class Var:
 
         EXAMPLES
         =======
+
+        Raises TypeError if value is not a real number
         """
         if not isinstance(value, Var.valid_types):
             raise TypeError('Invalid input type. ' +
                             'Value must be any of the following types: int, float, np.int, np.float.')
         self._val = value
-        self._der = {self: 1.0}
+        self._var_list = [self]
+        self._der = [1.0]
         return None
 
     def get_der(self, var_list=None):
-        """
+        """Gets the _der attribute of the Var object
         INPUTS
         =======
-        self: obejct of Var
-        var_list: a list of Var
+        self: a Var object
+        var_list: a list of Var objects
 
         RETURNS
         =======
-        der: a list of real numbers, whose i-th number is the derivative with respect to the i-th Var in var_list.
+        der: a list of real numbers; the i-th number is the partial derivative with respect to the i-th Var in var_list
 
         EXAMPLES
         =======
-        >>> x = Var(1)
-        >>> y = Var(1)
-        >>> f = x + 2*y
-        >>> f.get_der([x, y])
+        # >>> x = Var(1)
+        # >>> y = Var(1)
+        # >>> f = x + 2*y
+        # >>> f.get_der([x, y])
         [1.0, 2.0]
         """
         if var_list is None:
-            return list(self._der.values())
-        
+            return self._der.copy()
+
         der = [None]*len(var_list)
         for i, var in enumerate(var_list):
             der[i] = self._get_derivative_of(var)
         return der
 
     def _get_derivative_of(self, var):
-        """Returns the partial derivative of the Var object self with respect to one of its
-        variables var
+        """Returns the partial derivative of the Var object self with respect to one of its variables var
 
         INPUTS
         =======
-        self: object of Var
+        self: a Var object
 
         RETURNS
         =======
-        self.val: a real number, which is the partial derivaties of self with respect to the variable var.
+        self._val: a real number, which is the partial derivative of self with respect to the variable var
 
         EXAMPLES
         =======
-        >>> x = Var(5.0)
-        >>> y = Var(2.0)
-        >>> f = x**2+y
-        >>> f.get_derivative_of(x)
-        10.0
+
+        Raises TypeError if var is not a Var object
         """
         if isinstance(var, Var):
-            if var in self._der.keys():
-                return self._der[var]
+            idx = self._get_var_index(var, self._var_list)
+            if idx != -1:
+                return self._der[idx]
             else:
                 return 0.0
         else:
             raise TypeError('Invalid input type. ' +
                             'var must be any of the following types: Var.')
 
-    # def __eq__(self, other):
-    #     pass
-    #
-    #
-    # def __ne__(self, other):
-    #     pass
+    def _get_var_index(self, var, var_list):
+        """Returns the index of var in var_list
+        INPUTS
+        =======
+        self: a Var object
+        var: a Var object
+        var_list: a list of Var objects
 
-    def __add__(self, other):
-        """Returns the var object that results from adding the two inputs (self + other)
+        RETURNS
+        =======
+        an integer: the index of var if var is in var_list or -1 if var is not in var_list
+
+        EXAMPLES
+        =======
+        """
+        for i in range(len(var_list)):
+            if var is var_list[i]:
+                return i
+        return -1
+
+    def __eq__(self, other):
+        """Returns true if self and other have the same value and same variables with same partial derivatives
 
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
+        other: a Var object
+
+        RETURNS
+        =======
+        a boolean, indicating if self and other have the same value and same variables with same partial derivatives
+
+        # TODO
+        EXAMPLES
+        =======
+
+        """
+        if isinstance(other, Var) and self._val == other._val and len(self._var_list) == len(other._var_list):
+            for var, der in zip(self._var_list, self._der):
+                idx = other._get_var_index(var, other._var_list)
+                if idx == -1 or other._der[idx] != der:
+                    return False
+            return True
+        return False
+
+    def __ne__(self, other):
+        """Returns true if __eq__ returns False
+
+        INPUTS
+        =======
+        self: a Var object
+        other: a Var object
+
+        RETURNS
+        =======
+        a boolean, indicating if __eq__ returns False
+
+        # TODO
+        EXAMPLES
+        =======
+
+        """
+        return not self == other
+
+    def __add__(self, other):
+        """Returns a Var object that results from adding the two inputs (self + other)
+
+        INPUTS
+        =======
+        self: a Var object
         other: a float or integer number, or a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
+        new_var: a Var object
             If other is a Var object, returns a Var object with:
-            - A value equal to the sum of each val attribute of self and other
-            - A der equal to the sum of the ders
-            Note that when both Var objects contain different variables the der is expanded
+            - _val equal to the sum of the _val attribute of self and other
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives equal to the sum of partial derivatives of self and other
+
 
             If other is a real number (int, float, np.int, np.float), returns a Var object with:
-            - A value equal to the sum of the val attribute of and the number
-            - A der equal to the der of self
+            - _val equal to the sum of the self._val and the number
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives equal to self._der
 
         EXAMPLES
         =======
-        >>> x = Var(5.0)
-        >>> f = x+3.0
-        >>> x.get_value()
+        # >>> x = Var(5.0)
+        # >>> f = x+3.0
+        # >>> f.get_value()
         8.0
-        >>> x.get_der()
+        # >>> f.get_der()
         [1.0]
 
-        Raises TypeError when other is no Var object or real number
+        Raises TypeError when other is not a Var object or a real number
         """
         if isinstance(other, Var):
             new_val = self._val + other._val
-            new_der = {}
 
-            # Obtain a new variable set. For example, if self has {x, y}, and other has {y, z},
-            # then the new variable set would be {x, y, z}
-            new_vars = set(self._der.keys()) | set(other._der.keys())
+            new_var_list = self._var_list.copy()
+            for var in other._var_list:
+                if self._get_var_index(var, self._var_list) == -1:
+                    new_var_list.append(var)
 
-            # Loop through new variables in the new variable set
-            # For each variable calculate the partial derivative.
-            # if the dictionary does not contain the key/variable it will return None.
-            # float(None or 0) = 0.0; float(a real number or 0) = a real number (e.g. float(5 or 0) = 5.0)
-            for var in new_vars:
-                new_der[var] = float(self._der.get(var) or 0) + float(other._der.get(var) or 0)
+            new_der = [None] * len(new_var_list)
+
+            for i, var in enumerate(new_var_list):
+                new_der[i] = self._get_derivative_of(var) + other._get_derivative_of(var)
         elif isinstance(other, Var.valid_types):
-            new_val = self._val + other
-            new_der = self._der
+            return self + _Constant(other)
         else:
             raise TypeError('Invalid input type. ' +
                             'Other must be any of the following types: Var, int, float, np.int, np.float.')
 
         new_var = Var(new_val)
+        new_var._var_list = new_var_list
         new_var._der = new_der
         return new_var
 
     def __radd__(self, other):
-        """Returns the var object that results from adding the two inputs (other + self)
+        """Returns a Var object that results from adding the two inputs (other + self)
 
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
         other: a float or integer number
 
         RETURNS
         =======
-        new_var: an object of Var.
+        new_var: a Var object.
             Other cannot be a Var object, as this case falls under __add__
 
             If other is a real number (int, float, np.int, np.float), returns a Var object with:
-            - A value equal to the sum of the val attribute of and the number
-            - A der equal to the der of self
+            - _val equal to the sum of the self._val and the number
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives equal to self._der
 
         EXAMPLES
         =======
-        >>> x = Var(5.0)
-        >>> f = 3.0+x
-        >>> x.get_value()
+        # >>> x = Var(5.0)
+        # >>> f = 3.0+x
+        # >>> f.get_value()
         8.0
-        >>> x.get_der()
+        # >>> f.get_der()
         [1.0]
 
-        Raises TypeError when other is no real number
+        Raises TypeError when other is not a real number
         """
         if isinstance(other, Var.valid_types):
-            new_val = other + self._val
-            new_der = self._der
+            return _Constant(other) + self
         else:
             raise TypeError('Invalid input type. ' +
                             'Other must be any of the following types: int, float, np.int, np.float.')
 
-        new_var = Var(new_val)
-        new_var._der = new_der
-        return new_var
-
     def __sub__(self, other):
-        """Returns the var object that results from subtracting the two inputs (self - other)
+        """Returns a Var object that results from subtracting the two inputs (self - other)
 
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
         other: a float or integer number, or a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
+        new_var: a Var object.
             If other is a Var object, returns a Var object with:
-            - A value equal to self.val - other.val
-            - A der equal to the difference between the ders of self and other
-            Note that when both Var objects contain different variables the der is expanded
+            - _val equal to self._val - other._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives equal to the difference of partial derivatives between self and other
 
             If other is a real number (int, float, np.int, np.float), returns a Var object with:
-            - A value equal to self._val - other
-            - A der equal to the der of self
+            - _val equal to self._val - other
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives equal to self._der
 
         EXAMPLES
         =======
-        >>> x = Var(5.0)
-        >>> f = x-3.0
-        >>> x.get_value()
+        # >>> x = Var(5.0)
+        # >>> f = x-3.0
+        # >>> f.get_value()
         2.0
-        >>> x.get_der()
+        # >>> f.get_der()
         [1.0]
 
-        Raises TypeError when other is no Var object or real number
+        Raises TypeError when other is not a Var object or a real number
         """
         if isinstance(other, Var):
             new_val = self._val - other._val
-            new_der = {}
 
-            new_vars = set(self._der.keys()) | set(other._der.keys())
-            for var in new_vars:
-                new_der[var] = float(self._der.get(var) or 0) - float(other._der.get(var) or 0)
+            new_var_list = self._var_list.copy()
+            for var in other._var_list:
+                if self._get_var_index(var, self._var_list) == -1:
+                    new_var_list.append(var)
+
+            new_der = [None] * len(new_var_list)
+
+            for i, var in enumerate(new_var_list):
+                new_der[i] = self._get_derivative_of(var) - other._get_derivative_of(var)
         elif isinstance(other, Var.valid_types):
-            new_val = self._val - other
-            new_der = self._der
+            return self - _Constant(other)
         else:
             raise TypeError('Invalid input type. ' +
                             'Other must be any of the following types: Var, int, float, np.int, np.float.')
 
         new_var = Var(new_val)
+        new_var._var_list = new_var_list
         new_var._der = new_der
         return new_var
 
     def __rsub__(self, other):
-        """Returns the var object that results from subtracting the two inputs (other - self)
+        """Returns a Var object that results from subtracting the two inputs (other - self)
 
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
         other: a float or integer number
 
         RETURNS
         =======
-        new_var: an object of Var.
+        new_var: a Var object.
             Other cannot be a Var object, as this case falls under __sub__
 
             If other is a real number (int, float, np.int, np.float), returns a Var object with:
-            - A value equal to other - self._val
-            - A der equal to the negative der of self
+            - _val equal to other - self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives equal to self._der
 
         EXAMPLES
         =======
-        >>> x = Var(5.0)
-        >>> f = 3.0-x
-        >>> x.get_value()
+        # >>> x = Var(5.0)
+        # >>> f = 3.0-x
+        # >>> f.get_value()
         -2.0
-        >>> x.get_der()
+        # >>> f.get_der()
         [1.0]
 
-        Raises TypeError when other is no real number
+        Raises TypeError when other is not a real number
         """
         if isinstance(other, Var.valid_types):
-            new_val = other - self._val
-            new_der = {}
-
-            new_vars = set(self._der.keys())
-            for var in new_vars:
-                new_der[var] = -self._der.get(var)
+            return _Constant(other) - self
         else:
             raise TypeError('Invalid input type. ' +
                             'Other must be any of the following types: int, float, np.int, np.float.')
 
-        new_var = Var(new_val)
-        new_var._der = new_der
-        return new_var
-
     def __mul__(self, other):
-        """Returns the var object that results from multiplying the two inputs (self*other)
+        """Returns a Var object that results from multiplying the two inputs (self*other)
 
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
         other: a float or integer number, or a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
+        new_var: a Var object.
             If other is a Var object, returns a Var object with:
-            - A value equal to self._val*other._val
-            - A der following the rule of d(uv) = udv + vdu
-            Note that when both Var objects contain different variables the der is expanded
+            - _val equal to self._val * other._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives following the rule of d(uv) = udv + vdu
 
             If other is a real number (int, float, np.int, np.float), returns a Var object with:
-            - A value equal to self._val*other
-            - A der equal to the der of self multiplied by other
+            - _val equal to self._val * other
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives equal to self._der multiplied by other
 
         EXAMPLES
         =======
-        >>> x = Var(5.0)
-        >>> f = x*3.0
-        >>> x.get_value()
+        # >>> x = Var(5.0)
+        # >>> f = x*3.0
+        # >>> f.get_value()
         15.0
-        >>> x.get_der()
+        # >>> f.get_der()
         [3.0]
 
-        Raises TypeError when other is no Var object or real number
+        Raises TypeError when other is not a Var object or a real number
         """
         if isinstance(other, Var):
             new_val = self._val * other._val
-            new_der = {}
 
-            new_vars = set(self._der.keys()) | set(other._der.keys())
-            for var in new_vars:
-                new_der[var] = float(self._der.get(var) or 0) * other._val + self._val * float(other._der.get(var) or 0)
+            new_var_list = self._var_list.copy()
+            for var in other._var_list:
+                if self._get_var_index(var, self._var_list) == -1:
+                    new_var_list.append(var)
+
+            new_der = [None] * len(new_var_list)
+
+            for i, var in enumerate(new_var_list):
+                new_der[i] = self._get_derivative_of(var) * other._val + self._val * other._get_derivative_of(var)
         elif isinstance(other, Var.valid_types):
-            new_val = self._val * other
-            new_der = {}
-
-            new_vars = self._der.keys()
-            for var in new_vars:
-                new_der[var] = self._der.get(var) * other
+            return self * _Constant(other)
         else:
             raise TypeError('Invalid input type. ' +
                             'Other must be any of the following types: Var, int, float, np.int, np.float.')
 
         new_var = Var(new_val)
+        new_var._var_list = new_var_list
         new_var._der = new_der
         return new_var
 
@@ -377,101 +433,91 @@ class Var:
 
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
         other: a float or integer number
 
         RETURNS
         =======
-        new_var: an object of Var.
+        new_var: a Var object.
             Other cannot be a Var object, as this case falls under __mul__
 
             If other is a real number (int, float, np.int, np.float), returns a Var object with:
-            - A value equal to other*self._val
-            - A der equal to the der of self multiplied by other
+            - _val equal to other * self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives equal to self._der multiplied by other
 
         EXAMPLES
         =======
-        >>> x = Var(5.0)
-        >>> f = 3.0*x
-        >>> x.get_value()
+        # >>> x = Var(5.0)
+        # >>> f = 3.0*x
+        # >>> f.get_value()
         15.0
-        >>> x.get_der()
+        # >>> f.get_der()
         [3.0]
 
-        Raises TypeError when other is no real number
+        Raises TypeError when other is not a real number
         """
         if isinstance(other, Var.valid_types):
-            new_val = other * self._val
-            new_der = {}
-
-            new_vars = self._der.keys()
-            for var in new_vars:
-                new_der[var] = self._der.get(var) * other
+            return _Constant(other) * self
         else:
             raise TypeError('Invalid input type. ' +
                             'Other must be any of the following types: int, float, np.int, np.float.')
 
-        new_var = Var(new_val)
-        new_var._der = new_der
-        return new_var
-
     def __truediv__(self, other):
-        """Returns the var object that results from dividing the two inputs (self/other)
+        """Returns a Var object that results from dividing the two inputs (self/other)
 
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
         other: a float or integer number, or a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
+        new_var: a Var object.
             If other is a Var object, returns a Var object with:
-            - A value equal to self._val/other._val
-            - A der following the rule of d(u/v) = (udv - vdu)/v^2
-            Note that when both Var objects contain different variables the der is expanded
+            - _val equal to self._val / other._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives following the rule of d(u/v) = (udv - vdu)/v^2
 
             If other is a real number (int, float, np.int, np.float), returns a Var object with:
-            - A value equal to self.val/other
-            - A der equal to the der of self divided by other
+            - _val equal to other / other
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives equal to self._der divided by other
 
         EXAMPLES
         =======
-        >>> x = Var(5.0)
-        >>> f = x/2.0
-        >>> x.get_value()
+        # >>> x = Var(5.0)
+        # >>> f = x/2.0
+        # >>> f.get_value()
         2.5
-        >>> x.get_der()
+        # >>> f.get_der()
         [0.5]
 
-        Raises TypeError when other is no Var object or real number
+        Raises TypeError when other is not a Var object or a real number
         Raises ZeroDivisionError when other._val or other is equal to zero
         """
         if isinstance(other, Var):
             if other._val == 0:
                 raise ZeroDivisionError("Denominator cannot be 0.")
             new_val = self._val / other._val
-            new_der = {}
 
-            new_vars = set(self._der.keys()) | set(other._der.keys())
-            for var in new_vars:
-                new_der[var] = (float(self._der.get(var) or 0) * other._val
-                                     - self._val * float(other._der.get(var) or 0))\
-                               /(other._val ** 2)
+            new_var_list = self._var_list.copy()
+            for var in other._var_list:
+                if self._get_var_index(var, self._var_list) == -1:
+                    new_var_list.append(var)
+
+            new_der = [None] * len(new_var_list)
+
+            for i, var in enumerate(new_var_list):
+                new_der[i] = (self._get_derivative_of(var) * other._val - self._val * other._get_derivative_of(var)) / (other._val ** 2)
         elif isinstance(other, Var.valid_types):
-            if other == 0:
-                raise ZeroDivisionError("Denominator cannot be 0.")
-            new_val = self._val / other
-            new_der = {}
-
-            new_vars = set(self._der.keys())
-            for var in new_vars:
-                new_der[var] = self._der.get(var) / other
+            return self / _Constant(other)
         else:
             raise TypeError('Invalid input type. ' +
                             'Other must be any of the following types: Var, int, float, np.int, np.float.')
 
         new_var = Var(new_val)
+        new_var._var_list = new_var_list
         new_var._der = new_der
         return new_var
 
@@ -480,27 +526,27 @@ class Var:
 
         INPUTS
         =======
-        self: obejct of Var
+        self: object of Var
         other: a float or integer number
 
         RETURNS
         =======
-        new_var: an object of Var.
+        new_var: a Var object.
             Other cannot be a Var object, as this case falls under __truediv__
 
             If other is a real number (int, float, np.int, np.float), returns a Var object with:
-            - A value equal to other/self._val
-            - A der equal to other multiplied by the der that follows the rule d(1/u) = -1/u^2
+            - _val equal to other / self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives following the rule of d(1/u) = -1/u^2
 
         EXAMPLES
         =======
-        >>> x = Var(5.0)
-        >>> f = 10.0/x
-        >>> x.get_value()
+        # >>> x = Var(5.0)
+        # >>> f = 10.0/x
+        # >>> f.get_value()
         2.0
-        >>> x.get_der()
+        # >>> f.get_der()
         [0.4]
-
 
         Raises TypeError when other is no real number
         Raises ZeroDivisionError when self._val is equal to zero
@@ -508,261 +554,248 @@ class Var:
         if self._val == 0:
             raise ZeroDivisionError("Denominator cannot be 0.")
         if isinstance(other, Var.valid_types):
-            new_val = other / self._val
-            new_der = {}
-
-            new_vars = set(self._der.keys())
-            for var in new_vars:
-                new_der[var] = -other/(self._val ** 2) * self._der.get(var)
+            return _Constant(other) / self
         else:
             raise TypeError('Invalid input type. ' +
                             'Other must be any of the following types: int, float, np.int, np.float.')
 
-        new_var = Var(new_val)
-        new_var._der = new_der
-        return new_var
-
     def __abs__(self):
-        """Returns the var object whose val is the absolute value of self._val
+        """Returns a Var object whose _val is the absolute value of self._val
 
         INPUTS
         =======
-        self: obejct of Var
-        other: a Var object
+        self: a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
+        new_var: a Var object
             When self.val > 0, returns a Var object with:
-            - A value equal to self._val
-            - A der equal self._der
+            - _val equal to self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives equal to self._der
 
             When self.val < 0, returns a Var object with:
-            - A value equal to -self._val
-            - A der equal -self._der
+            - _val equal to -self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives equal to -self._der
 
         EXAMPLES
         =========
-        >>> x = Var(-5.0)
-        >>> f = abs(x)
-        >>> print(f.get_value())
+        # >>> x = Var(-5.0)
+        # >>> f = abs(x)
+        # >>> print(f.get_value())
         5.0
-        >>> print(f.get_der())
+        # >>> print(f.get_der())
         [-1.0]
 
         Raises ValueError when self._val = 0, as the derivative is then undefined
         """
         if self._val == 0:
             raise ValueError('Derivative of abs() is not defined at 0.')
-        elif self._val < 0:
-            new_val = -self._val
-            new_der = {}
 
-            new_vars = set(self._der.keys())
-            for var in new_vars:
-                new_der[var] = -self._der.get(var)
-        elif self._val > 0:
+        if self._val < 0:
+            new_val = -self._val
+            new_der = []
+
+            for der in self._der:
+                new_der.append(-der)
+        else:
             new_val = self._val
-            new_der = self._der
+            new_der = self._der.copy()
 
         new_var = Var(new_val)
+        new_var._var_list = self._var_list.copy()
         new_var._der = new_der
         return new_var
 
     def __neg__(self):
-        """Returns a Var object whose val is the negative value of self._val
+        """Returns a Var object whose _val is the negative value of self._val
 
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
         other: a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
-            Returns a Var object with:
-            - A value equal to -self._val
-            - A der equal -self._der
+        new_var: a Var object with:
+            - _val equal to -self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives equal to -self._der
 
          EXAMPLES
          =========
-         >>> x = Var(2.0)
-         >>> f = -x
-         >>> print(f.get_value())
+         # >>> x = Var(2.0)
+         # >>> f = -x
+         # >>> print(f.get_value())
          -2.0
-         >>> print(f.get_der())
+         # >>> print(f.get_der())
          [-1.0]
          """
         new_val = -self._val
-        new_der = {}
+        new_der = []
 
-        new_vars = set(self._der.keys())
-        for var in new_vars:
-            new_der[var] = -self._der.get(var)
+        for der in self._der:
+            new_der.append(-der)
 
         new_var = Var(new_val)
+        new_var._var_list = self._var_list.copy()
         new_var._der = new_der
         return new_var
 
     def __pow__(self, power, modulo=None):
-        """Returns the var object that results from taking self to the power of power (self**power)
+        """Returns a Var object that results from taking self to the power of power (self**power)
 
         INPUTS
         =======
-        self: object of Var
+        self: a Var object
         other: a real number (int, float, np.int, np.float), or a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
+        new_var: a Var object.
             If power is a Var object, returns a Var object with:
-            - A value equal to self._val**power._val
-            - A der following the rule of d(u^v) = u^v(dv*log(u) + v*du/u)
-            Note that when both Var objects contain different variables the der is expanded
+            - _val equal to self._val^power._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives following the rule of d(u^v) = u^(v-1)(dv*log(u)*u + v*du)
 
             If power is a real number (int, float, np.int, np.float), returns a Var object with:
-            - A value equal to self.val^power
-            - A der following the rule d(u^power) = power*u^(power-1)*du
+            - _val equal to self.val^power
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives following the rule of d(u^power) = power*u^(power-1)*du
 
         EXAMPLES
         =========
-        >>> x = Var(5.0)
-        >>> f = x**2
-        >>> print(f.get_value())
+        # >>> x = Var(5.0)
+        # >>> f = x**2
+        # >>> print(f.get_value())
         25.0
-        >>> print(f.get_der())
+        # >>> print(f.get_der())
         [10.0]
 
-        Raises TypeError when power is no Var object or real number
+        Raises TypeError when power is not a Var object or a real number
         Raises ValueError when self._val < 0
         """
         if isinstance(power, Var):
-            if self._val < 0:
+            if (not isinstance(power, _Constant)) and self._val < 0:
                 raise ValueError("The derivative of x ** y is not defined on x < 0.")
             new_val = self._val ** power._val
-            new_der = {}
 
-            new_vars = set(self._der.keys()) | set(power._der.keys())
-            for var in new_vars:
-                new_der[var] = new_val * \
-                                    (float(power._der.get(var) or 0) * np.log(self._val) +
-                                     power._val * float(self._der.get(var) or 0) / self._val)
+            new_var_list = self._var_list.copy()
+            for var in power._var_list:
+                if self._get_var_index(var, self._var_list) == -1:
+                    new_var_list.append(var)
+
+            new_der = [None] * len(new_var_list)
+
+            for i, var in enumerate(new_var_list):
+                if power._get_derivative_of(var) == 0.0:
+                    new_der[i] = self._val ** (power._val-1) * (power._val * self._get_derivative_of(var))
+                else:
+                    new_der[i] = self._val ** (power._val-1) * (power._get_derivative_of(var) * np.log(self._val) * self._val +
+                                     power._val * self._get_derivative_of(var))
         elif isinstance(power, Var.valid_types):
-            new_val = self._val ** power
-            new_der = {}
-
-            new_vars = set(self._der.keys())
-            for var in new_vars:
-                new_der[var] = power * self._val ** (power - 1) * self._der.get(var)
+            return self ** _Constant(power)
         else:
             raise TypeError('Invalid input type. ' +
                             'Other must be any of the following types: Var, int, np.int.')
 
         new_var = Var(new_val)
+        new_var._var_list = new_var_list
         new_var._der = new_der
         return new_var
 
     def __rpow__(self, other):
-        """Returns the var object that results from taking other to the power of self (other**self)
+        """Returns a Var object that results from taking other to the power of self (other**self)
 
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
         other: a real number (int, float, np.int, np.float)
 
         RETURNS
         =======
-        new_var: an object of Var.
+        new_var: a Var object.
             Other cannot be a Var object, as this case falls under __pow__
 
             If other is a real number (int, float, np.int, np.float), returns a Var object with:
-            - A value equal to power^self._val
-            - A der following the rule d(other^u) = other^u*log(other)du
+            - _val equal to power^self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives following the rule of d(other^u) = other^u*log(other)du
 
         EXAMPLES
         =========
-        >>> x = Var(5.0)
-        >>> f = 2.0**x
-        >>> print(f.get_value())
-        32.0
-        >>> np.round(f.get_der(), 8) == 22.18070978
+        # # >>> x = Var(5.0)
+        # # >>> f = 2.0**x
+        # # >>> print(f.get_value())
+        # 32.0
+        # # >>> np.round(f.get_der(), 8) == 22.18070978
 
-        Raises TypeError when other is no Var object or real number
+        Raises TypeError when other is not a Var object or a real number
         Raises ValueError when other < 0
         """
         if isinstance(other, Var.valid_types):
-            if other < 0:
-                raise ValueError("The derivative of b ** x, b**x * ln(b), is not defined on b < 0.")
-            new_val = other ** self._val
-            new_der = {}
-
-            new_vars = set(self._der.keys())
-            for var in new_vars:
-                new_der[var] = (other ** self._val) * np.log(other) * self._der.get(var)
+            return _Constant(other) ** self
         else:
             raise TypeError('Invalid input type. ' +
                             'Other must be any of the following types: int, float, np.int, np.float.')
 
-        new_var = Var(new_val)
-        new_var._der = new_der
-        return new_var
-
     def exp(self):
-        """Returns the var object that results from taking the exponent of self
+        """Returns a Var object that results from taking the exponent of self
 
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
         other: a real number (int, float, np.int, np.float), or a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
-            Returns a Var object with:
-            - A value equal to exp(self._val)
-            - A der following the rule d(exp(u)) = exp(u)*du
+        new_var: a Var object with:
+            - _val equal to exp(self._val)
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives following the rule d(exp(u)) = exp(u)*du
 
         EXAMPLES
         =========
-        >>> x = Var(5.0)
-        >>> f = Var.exp(x)
-        >>> print(f.get_value())
+        # >>> x = Var(5.0)
+        # >>> f = Var.exp(x)
+        # >>> print(f.get_value())
         148.41
-        >>> print(np.round(f.get_der(), 2))
+        # >>> print(np.round(f.get_der(), 2))
         [148.41]
         """
         new_val = np.exp(self._val)
-        new_der = {}
+        new_der = []
 
-        new_vars = set(self._der.keys())
-        for var in new_vars:
-            new_der[var] = np.exp(self._val) * self._der.get(var)
+        for der in self._der:
+            new_der.append(np.exp(self._val) * der)
 
         new_var = Var(new_val)
+        new_var._var_list = self._var_list.copy()
         new_var._der = new_der
         return new_var
 
-    def log(self, b = np.e):
+    def log(self, b=np.e):
         """
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
         b: an integer, the base of the logarithm
 
         RETURNS
         =======
-        new_var: an object of Var.
-            Returns a Var object with:
-            - A value equal to the base b logarithm of self._val
-            - A der following the rule d(log(u, b)) = 1/(u*log(b))*du
+        new_var: a Var object with:
+            - _val equal to the base b logarithm of self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives following the rule d(log(u, b)) = 1/(u*log(b))*du
 
          EXAMPLES
          =========
-         >>> x = Var(1000)
-         >>> f = Var.log(x, 10)
-         >>> print(f.get_value())
+         # >>> x = Var(1000)
+         # >>> f = Var.log(x, 10)
+         # >>> print(f.get_value())
          3.0
-         >>> print(np.round(f.get_der(), 4))
+         # >>> print(np.round(f.get_der(), 4))
          [0.0004]
 
          Raises TypeError when b is not an int, float, np.int, np.float
@@ -778,13 +811,13 @@ class Var:
             raise ValueError("log(x) is not defined on x <= 0.")
 
         new_val = math.log(self._val, b)
-        new_der = {}
+        new_der = []
 
-        new_vars = set(self._der.keys())
-        for var in new_vars:
-            new_der[var] = 1 / (self._val * np.log(b)) * self._der.get(var)
+        for der in self._der:
+            new_der.append(1 / (self._val * np.log(b)) * der)
 
         new_var = Var(new_val)
+        new_var._var_list = self._var_list.copy()
         new_var._der = new_der
         return new_var
 
@@ -792,22 +825,22 @@ class Var:
         """
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
-            Returns a Var object with:
-            - A value equal to the square root of self._val
-            - A der following the rule d(sqrt(u)) = 1/2*(u)^(-1/2)*du
+        new_var: a Var object with:
+            - _val equal to the square root of self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives following the rule d(sqrt(u)) = 1/2*(u)^(-1/2)*du
 
         EXAMPLES
         =========
-        >>> x = Var(9)
-        >>> f = Var.sqrt(x)
-        >>> print(f.get_value())
+        # >>> x = Var(9)
+        # >>> f = Var.sqrt(x)
+        # >>> print(f.get_value())
         3.0
-        >>> print(np.round(f.get_der(), 2))
+        # >>> print(np.round(f.get_der(), 2))
         0.17
 
         Raises ValueError when self._val < 0
@@ -819,13 +852,13 @@ class Var:
             raise ZeroDivisionError("Zero division occurs when derivative is calculated. " +
                                     "The derivative of sqrt(x), 1/2 * 1/sqrt(x), is undefined on x = 0.")
         new_val = np.sqrt(self._val)
-        new_der = {}
+        new_der = []
 
-        new_vars = self._der.keys()
-        for var in new_vars:
-            new_der[var] = 1/2 * self._val**(-1/2) * self._der[var]
+        for der in self._der:
+            new_der.append(1/2 * self._val**(-1/2) * der)
 
         new_var = Var(new_val)
+        new_var._var_list = self._var_list.copy()
         new_var._der = new_der
         return new_var
 
@@ -833,32 +866,32 @@ class Var:
         """
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
-            Returns a Var object with:
-            - A value equal to the sine of self._val
-            - A der following the rule d(sin(u)) = cos(u)*du
+        new_var: a Var object with:
+            - _val equal to the sine of self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives following the rule d(sin(u)) = cos(u)*du
 
         EXAMPLES
         =========
-        >>> x = Var(np.pi)
-        >>> f = 10e16 * Var.sin(x)
-        >>> print(np.round(f.get_value(), 2))
+        # >>> x = Var(np.pi)
+        # >>> f = 10e16 * Var.sin(x)
+        # >>> print(np.round(f.get_value(), 2))
         12.25
-        >>> print(np.round(f.get_der(), 2))
+        # >>> print(np.round(f.get_der(), 2))
         [-1.e+17]
         """
         new_val = np.sin(self._val)
-        new_der = {}
+        new_der = []
 
-        new_vars = self._der.keys()
-        for var in new_vars:
-            new_der[var] = np.cos(self._val) * self._der[var]
+        for der in self._der:
+            new_der.append(np.cos(self._val) * der)
 
         new_var = Var(new_val)
+        new_var._var_list = self._var_list.copy()
         new_var._der = new_der
         return new_var
 
@@ -866,22 +899,22 @@ class Var:
         """
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
-            Returns a Var object with:
-            - A value equal to the arcsine of self._val
-            - A der following the rule d(arcsin(u)) = 1/sqrt(1-u^2)*du
+        new_var: a Var object with:
+            - _val equal to the arcsine of self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives following the rule d(arcsin(u)) = 1/sqrt(1-u^2)*du
 
         EXAMPLES
         =========
-        >>> x = Var(0)
-        >>> f = Var.arcsin(x)
-        >>> print(f.get_value())
+        # >>> x = Var(0)
+        # >>> f = Var.arcsin(x)
+        # >>> print(f.get_value())
         0
-        >>> print(f.get_der())
+        # >>> print(f.get_der())
         [1.0]
 
         Raises ValueError when abs(self._val) > 1
@@ -895,13 +928,13 @@ class Var:
                                     "is undefined on x = 1.")
 
         new_val = np.arcsin(self._val)
-        new_der = {}
+        new_der = []
 
-        new_vars = self._der.keys()
-        for var in new_vars:
-            new_der[var] = 1 / np.sqrt(1 - self._val**2) * self._der[var]
+        for der in self._der:
+            new_der.append(1 / np.sqrt(1 - self._val**2) * der)
 
         new_var = Var(new_val)
+        new_var._var_list = self._var_list.copy()
         new_var._der = new_der
         return new_var
 
@@ -909,32 +942,32 @@ class Var:
         """
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
-            Returns a Var object with:
-            - A value equal to the cosine of self._val
-            - A der following the rule d(cos(u)) = -sin(u)*du
+        new_var: a Var object with:
+            - _val equal to the cosine of self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatvies following the rule d(cos(u)) = -sin(u)*du
 
         EXAMPLES
         =========
-        >>> x = Var(np.pi)
-        >>> f = 10e16 * Var.cos(x)
-        >>> print(np.round(f.get_value(), 2))
+        # >>> x = Var(np.pi)
+        # >>> f = 10e16 * Var.cos(x)
+        # >>> print(np.round(f.get_value(), 2))
         -1.e+17
-        >>> print(np.round(f.get_der(), 2))
+        # >>> print(np.round(f.get_der(), 2))
         [-12.25]
         """
         new_val = np.cos(self._val)
-        new_der = {}
+        new_der = []
 
-        new_vars = self._der.keys()
-        for var in new_vars:
-            new_der[var] = -np.sin(self._val) * self._der[var]
+        for der in self._der:
+            new_der.append(-np.sin(self._val) * der)
 
         new_var = Var(new_val)
+        new_var._var_list = self._var_list.copy()
         new_var._der = new_der
         return new_var
 
@@ -942,22 +975,22 @@ class Var:
         """
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
-            Returns a Var object with:
-            - A value equal to the arccosine of self._val
-            - A der following the rule d(arccos(u)) = -1/sqrt(1-u^2)*du
+        new_var: a Var object with:
+            - _val equal to the arccosine of self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives following the rule d(arccos(u)) = -1/sqrt(1-u^2)*du
 
         EXAMPLES
         =========
-        >>> x = Var(0)
-        >>> f = Var.arccos(x)
-        >>> print(np.round(f.get_value(), 2))
+        # >>> x = Var(0)
+        # >>> f = Var.arccos(x)
+        # >>> print(np.round(f.get_value(), 2))
         1.57
-        >>> print(np.round(f.get_der(), 2))
+        # >>> print(np.round(f.get_der(), 2))
         [-1.0]
 
         Raises ValueError when abs(self._val) > 1
@@ -970,13 +1003,13 @@ class Var:
                                     "The derivative of arccos(x), -1/sqrt(1 - x^2), " +
                                     "is undefined on x = 1.")
         new_val = np.arccos(self._val)
-        new_der = {}
+        new_der = []
 
-        new_vars = self._der.keys()
-        for var in new_vars:
-            new_der[var] = -1 / np.sqrt(1 - self._val**2) * self._der[var]
+        for der in self._der:
+            new_der.append(-1 / np.sqrt(1 - self._val**2) * der)
 
         new_var = Var(new_val)
+        new_var._var_list = self._var_list.copy()
         new_var._der = new_der
         return new_var
 
@@ -984,22 +1017,22 @@ class Var:
         """
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
-            Returns a Var object with:
-            - A value equal to the tangent of self._val
-            - A der following the rule d(tan(u)) = 1/(cos(u)^2)*du
+        new_var: a Var object with:
+            - _val equal to the tangent of self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives following the rule d(tan(u)) = 1/(cos(u)^2)*du
 
         EXAMPLES
         =========
-        >>> x = Var(np.pi / 3)
-        >>> f = Var.tan(x)
-        >>> print(np.round(f.get_value(), 2))
+        # >>> x = Var(np.pi / 3)
+        # >>> f = Var.tan(x)
+        # >>> print(np.round(f.get_value(), 2))
         1.73
-        >>> print(np.round(f.get_der(), 2))
+        # >>> print(np.round(f.get_der(), 2))
         [4.0]
 
         Raises ValueError when self._val = (2n+1)*pi/2
@@ -1007,13 +1040,13 @@ class Var:
         if self._val % (np.pi/2) == 0 and (self._val / (np.pi/2)) % 2 != 0:
             raise ValueError("Invalid value input. tan(x) is not defined on x = (2n+1)*pi/2.")
         new_val = np.tan(self._val)
-        new_der = {}
+        new_der = []
 
-        new_vars = self._der.keys()
-        for var in new_vars:
-            new_der[var] = (1 / np.cos(self._val))**2 * self._der[var]
+        for der in self._der:
+            new_der.append((1 / np.cos(self._val))**2 * der)
 
         new_var = Var(new_val)
+        new_var._var_list = self._var_list.copy()
         new_var._der = new_der
         return new_var
 
@@ -1021,32 +1054,32 @@ class Var:
         """
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
-            Returns a Var object with:
-            - A value equal to the arctangent of self._val
-            - A der following the rule d(arctan(u)) = 1/(u^2+1)*du
+        new_var: a Var object with:
+            - _val equal to the arctangent of self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives following the rule d(arctan(u)) = 1/(u^2+1)*du
 
         EXAMPLES
         =========
-        >>> x = Var(1)
-        >>> f = Var.arctan(x)
-        >>> print(np.round(f.get_value(), 2))
+        # >>> x = Var(1)
+        # >>> f = Var.arctan(x)
+        # >>> print(np.round(f.get_value(), 2))
         0.79
-        >>> print(np.round(f.get_der(), 2))
+        # >>> print(np.round(f.get_der(), 2))
         [0.5]
         """
         new_val = np.arctan(self._val)
-        new_der = {}
+        new_der = []
 
-        new_vars = self._der.keys()
-        for var in new_vars:
-            new_der[var] = 1 / (self._val**2 + 1) * self._der[var]
+        for der in self._der:
+            new_der.append(1 / (self._val**2 + 1) * der)
 
         new_var = Var(new_val)
+        new_var._var_list = self._var_list.copy()
         new_var._der = new_der
         return new_var
 
@@ -1054,32 +1087,32 @@ class Var:
         """
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
-            Returns a Var object with:
-            - A value equal to the hyperbolic sine of self._val
-            - A der following the rule d(sinh(u)) = cosh(u)*du
+        new_var: a Var object with:
+            - _val equal to the hyperbolic sine of self._val
+            - _var_list being a list of current variables
+            - _der being a list partial derivatives following the rule d(sinh(u)) = cosh(u)*du
 
         EXAMPLES
         =========
-        >>> x = Var(1)
-        >>> f = Var.arcsin(x)
-        >>> print(np.round(f.get_value(), 2))
+        # >>> x = Var(1)
+        # >>> f = Var.arcsin(x)
+        # >>> print(np.round(f.get_value(), 2))
         1.18
-        >>> print(np.round(f.get_der(), 2))
+        # >>> print(np.round(f.get_der(), 2))
         [1.54]
         """
         new_val = np.sinh(self._val)
-        new_der = {}
+        new_der = []
 
-        new_vars = self._der.keys()
-        for var in new_vars:
-            new_der[var] = np.cosh(self._val) * self._der[var]
+        for der in self._der:
+            new_der.append(np.cosh(self._val) * der)
 
         new_var = Var(new_val)
+        new_var._var_list = self._var_list.copy()
         new_var._der = new_der
         return new_var
 
@@ -1087,32 +1120,32 @@ class Var:
         """
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
-            Returns a Var object with:
-            - A value equal to the hyperbolic cosine of self._val
-            - A der following the rule d(sinh(u)) = sinh(u)*du
+        new_var: a Var object with:
+            - _val equal to the hyperbolic cosine of self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives following the rule d(sinh(u)) = sinh(u)*du
 
         EXAMPLES
         =========
-        >>> x = Var(1)
-        >>> f = Var.cosh(x)
-        >>> print(np.round(f.get_value(), 2))
+        # >>> x = Var(1)
+        # >>> f = Var.cosh(x)
+        # >>> print(np.round(f.get_value(), 2))
         1.54
-        >>> print(np.round(f.get_der(), 2))
+        # >>> print(np.round(f.get_der(), 2))
         [1.18]
         """
         new_val = np.cosh(self._val)
-        new_der = {}
+        new_der = []
 
-        new_vars = self._der.keys()
-        for var in new_vars:
-            new_der[var] = np.sinh(self._val) * self._der[var]
+        for der in self._der:
+            new_der.append(np.sinh(self._val) * der)
 
         new_var = Var(new_val)
+        new_var._var_list = self._var_list.copy()
         new_var._der = new_der
         return new_var
 
@@ -1120,32 +1153,61 @@ class Var:
         """
         INPUTS
         =======
-        self: obejct of Var
+        self: a Var object
 
         RETURNS
         =======
-        new_var: an object of Var.
-            Returns a Var object with:
-            - A value equal to the hyperbolic tangent of self._val
-            - A der following the rule d(tanh(u)) = 1/(cosh(u)^2)*du
+        new_var: a Var object with:
+            - _val equal to the hyperbolic tangent of self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives following the rule d(tanh(u)) = 1/(cosh(u)^2)*du
 
         EXAMPLES
         =========
-        >>> x = Var(1)
-        >>> f = Var.tanh(x)
-        >>> print(np.round(f.get_value(), 2))
+        # >>> x = Var(1)
+        # >>> f = Var.tanh(x)
+        # >>> print(np.round(f.get_value(), 2))
         0.76
-        >>> print(np.round(f.get_der(), 2))
+        # >>> print(np.round(f.get_der(), 2))
         [0.42]
         """
         new_val = np.tanh(self._val)
-        new_der = {}
+        new_der = []
 
-        new_vars = self._der.keys()
-        for var in new_vars:
-            new_der[var] = (1 / np.cosh(self._val))**2 * self._der[var]
+        for der in self._der:
+            new_der.append((1 / np.cosh(self._val))**2 * der)
 
         new_var = Var(new_val)
+        new_var._var_list = self._var_list.copy()
+        new_var._der = new_der
+        return new_var
+
+    def logistic(self):
+        """
+        INPUTS
+        =======
+        self: a Var object
+
+        RETURNS
+        =======
+        new_var: a Var object with:
+            - _val equal to the logistic of self._val
+            - _var_list being a list of current variables
+            - _der being a list of partial derivatives following the rule d(logistic(u)) = e^(-u)/(1+e^(-u))^2*du
+
+        # TODO
+        EXAMPLES
+        =======
+
+        """
+        new_val = 1 / (1 + np.exp(-self._val))
+        new_der = []
+
+        for der in self._der:
+            new_der.append(np.exp(-self._val) / (1 + np.exp(-self._val))**2 * der)
+
+        new_var = Var(new_val)
+        new_var._var_list = self._var_list.copy()
         new_var._der = new_der
         return new_var
 
@@ -1174,7 +1236,7 @@ class MultiFunc:
 
         self._func_list = func_list
 
-    def get_values(self):
+    def get_value(self):
         """Returns a list of all val attributes corresponding to the Var objects in
         contained in the MultiFunc object self
 
@@ -1186,6 +1248,7 @@ class MultiFunc:
         =======
         val: a list of attributes Var.val, or thus a list of real numbers
 
+        # TODO
         EXAMPLES
         =======
 
@@ -1195,7 +1258,7 @@ class MultiFunc:
             val.append(f.get_value())
         return val
 
-    def get_jacobian(self, var_list):
+    def get_der(self, var_list=None):
         """
         INPUTS
         =======
@@ -1204,26 +1267,64 @@ class MultiFunc:
 
         RETURNS
         =======
-        jacobian: a matrix containing the partial derivatives of each function in self.func_list
+        der: a matrix containing the partial derivatives of each function in self.func_list
                   with respect to the Var objects listed in var_list
-                  So the element in the jacobian with index (i,j) corresponds to the partial derivative
+                  So the element in the der with index (i,j) corresponds to the partial derivative
                   of the i-th element in self.func_list with respect to the j-th Var in var_list.
                   This matrix only contains real values
 
+        # TODO
         EXAMPLES
         =======
 
         """
-        jacobian = []
+        der = []
+
         for f in self._func_list:
-            jacobian.append(f.get_der(var_list))
-        return jacobian
+            der.append(f.get_der(var_list))
+            
+        return der
 
     def __eq__(self, other):
-        pass
+        """Returns true if each two corresponding entries in self and other are equal
+
+        INPUTS
+        =======
+        self: object of MultiFunc
+        other: object of MultiFunc
+
+        RETURNS
+        =======
+        a boolean, indicating if each two corresponding entries in self and other are equal
+
+        # TODO
+        EXAMPLES
+        =======
+        """
+        if isinstance(other, MultiFunc):
+            for f1, f2 in zip(self._func_list, other._func_list):
+                if f1 != f2:
+                    return False
+            return True
+        return False
 
     def __ne__(self, other):
-        pass
+        """Returns true if __eq__ returns false
+
+        INPUTS
+        =======
+        self: object of MultiFunc
+        other: object of MultiFunc
+
+        RETURNS
+        =======
+        a boolean, indicating if __eq__returns false
+
+        # TODO
+        EXAMPLES
+        =======
+        """
+        return not self == other
 
     def __len__(self):
         """
@@ -1259,6 +1360,7 @@ class MultiFunc:
             If other is not a MultiFunc object, returns a MultiFunc object with:
             - for func_list an array of the Var objects in self.func_list added to other
 
+        # TODO
         EXAMPLES
         =========
 
@@ -1294,6 +1396,7 @@ class MultiFunc:
             If other is not a MultiFunc object, returns a MultiFunc object with:
             - for func_list an array of the Var objects in self.func_list added to other
 
+        # TODO
         EXAMPLES
         =========
         """
@@ -1322,6 +1425,7 @@ class MultiFunc:
             If other is not a MultiFunc object, returns a MultiFunc object with:
             - for func_list an array of the Var objects in self.func_list added minus other
 
+        # TODO
         EXAMPLES
         =========
 
@@ -1348,6 +1452,7 @@ class MultiFunc:
         self: object of MultiFunc
         other: a float or integer number or a Var object
 
+        # TODO
         RETURNS
         =======
         MultiFunc(new_func_list): an object of MultiFunc
@@ -1374,6 +1479,7 @@ class MultiFunc:
         self: object of MultiFunc
         other: a float or integer number, a Var object or a Multifunc object
 
+        # TODO
         RETURNS
         =======
         MultiFunc(new_func_list): an object of MultiFunc
@@ -1420,6 +1526,7 @@ class MultiFunc:
             If other is not a MultiFunc object, returns a MultiFunc object with:
             - for func_list an array of other multiplied by the Var objects in self.func_list
 
+        # TODO
         EXAMPLES
         =========
         """
@@ -1448,6 +1555,7 @@ class MultiFunc:
             If other is not a MultiFunc object, returns a MultiFunc object with:
             - for func_list an array of the Var objects in self.func_list divided by other
 
+        # TODO
         EXAMPLES
         =========
 
@@ -1483,6 +1591,7 @@ class MultiFunc:
             If other is not a MultiFunc object, returns a MultiFunc object with:
             - for func_list an array of other divided by the Var objects in self.func_list
 
+        # TODO
         EXAMPLES
         =========
         """
@@ -1493,7 +1602,7 @@ class MultiFunc:
         return MultiFunc(new_func_list)
 
     def __abs__(self):
-        """Returns the MultiFunc object that contains all the absolute values of the Var obejcts in self.func_list
+        """Returns the MultiFunc object that contains all the absolute values of the Var objects in self.func_list
 
         INPUTS
         =======
@@ -1505,6 +1614,8 @@ class MultiFunc:
 
             Returns a MultiFunc object with:
             - for func_list an array of the absolute values of all individual Var objects in self.func_list
+
+        # TODO
         EXAMPLES
         =========
         """
@@ -1516,7 +1627,7 @@ class MultiFunc:
         return MultiFunc(new_func_list)
 
     def __neg__(self):
-        """Returns the MultiFunc object that contains all the opposite values of the Var obejcts in self.func_list
+        """Returns the MultiFunc object that contains all the opposite values of the Var objects in self.func_list
 
         INPUTS
         =======
@@ -1528,6 +1639,8 @@ class MultiFunc:
 
             Returns a MultiFunc object with:
             - for func_list an array of the opposite values of all individual Var objects in self.func_list
+
+        # TODO
         EXAMPLES
         =========
         """
@@ -1556,6 +1669,7 @@ class MultiFunc:
             If power is not a MultiFunc object, returns a MultiFunc object with:
             - for func_list an array of Var objects of self raised to the specified power
 
+        # TODO
         EXAMPLES
         =========
 
@@ -1592,6 +1706,7 @@ class MultiFunc:
             Returns a MultiFunc object with:
             - for func_list an array of Var objects of self raised to the specified power
 
+        # TODO
         EXAMPLES
         =========
 
@@ -1602,7 +1717,7 @@ class MultiFunc:
 
         return MultiFunc(new_func_list)
 
-    def apply(self, func):
+    def apply(self, func, *args):
         """Returns the MultiFunc object that results from element-wisely apply the function func to all
         elements in MultiFunc
 
@@ -1612,11 +1727,10 @@ class MultiFunc:
         func: a non-dunder mtehod of the class Var
 
         Includes: Var.exp, Var.sqrt, Var.sin, Var.arcsin, Var.cos, Var.arccos
-                  Var.tan, Var.arctan, Var.sinh, Var.cosh, Var.tanh
+                  Var.tan, Var.arctan, Var.sinh, Var.cosh, Var.tanh, Var.logistic
 
                   Note that when a variable b should be specified in Var.log, the user should
-                  input a lambda function lambda x: Var.log(x,b)
-
+                  input two arguments: Var.log and b
 
         RETURNS
         =======
@@ -1625,6 +1739,7 @@ class MultiFunc:
             Returns a MultiFunc object with:
             - for func_list an array of the function func applied to all individual Var objects in self.func_list
 
+        # TODO
         EXAMPLES
         =========
 
@@ -1632,9 +1747,23 @@ class MultiFunc:
 
         new_func_list = []
         for i in range(len(self)):
-            new_func_list.append(func(self._func_list[i]))
+            if len(args) == 0:
+                new_func_list.append(func(self._func_list[i]))
+            else:
+                new_func_list.append(func(self._func_list[i], *args))
 
         return MultiFunc(new_func_list)
+
+
+class _Constant(Var):
+    def __init__(self, val):
+        """Initialized an object of the private Constant class, which is inherited from the Var class with three private
+        attributes: self._val, self._var_list and self._der
+        """
+        super().__init__(val)
+        self._var_list = []
+        self._der = []
+
 
 # x = Var(1)
 # y = Var(1)
@@ -1642,13 +1771,58 @@ class MultiFunc:
 # func_list = [x+y, x+y+z]
 # multi_func = MultiFunc(func_list)
 # print(multi_func.get_values())
-# print(multi_func.get_jacobian([x,y,z]))
+# print(multi_func.get_der([x,y,z]))
 #
 # new_f = multi_func.apply(Var.sin)
 # print(new_f.get_values())
-# print(new_f.get_jacobian([x,y,z]))
+# print(new_f.get_der([x,y,z]))
 
-x = Var(1.0)
-# assert x.get_value() == 1.0
-# assert type(x.get_value()) == float
-# assert x.get_der() == [1.0]
+# # x = Var(2)
+# y = Var(-5)
+# f1 = - 3 * y
+# print(f1.get_value())
+# print(f1.get_der())
+# # f2 = -f1
+# # print(f2.get_value())
+# # print(f2.get_der())
+# f3 = abs(f1)
+# print(f3.get_value())
+# print(f3.get_der())
+
+# x = Var(1.0)
+# y = Var(2.0)
+# z = Var(3.0)
+# print(x, y, z)
+# f = x + y + z
+# print(f._var_list)
+# print(f)
+# f1 = Var.logistic(f)
+# print(f1)
+# print(f1._var_list)
+# print(f1.get_der([x, y, z]))
+# print(f1.get_value())
+# print(np.round(f1.get_der(), 3))
+
+# x = Var(5.0)
+# f = MultiFunc([x + 2, x ** 3, 2 * x])
+# f1 = f.apply(Var.log)
+# print(f1.get_value())
+# print(f1.get_der())
+
+# x = Var(1)
+# y = Var(2)
+# f1 = x + y
+# f2 = 2*x + y
+# print(f1 == f2) # should be true because f1 and f2 have the same value and partial derivative w/ respect to x and y.
+
+# x = Var(1)
+# y = Var(1)
+# print(x == y) # should be false because x and y have different variables
+
+# x = Var(3.0)
+# y = Var(2.0)
+# z = MultiFunc([x, y])
+# z1 = 2*z
+# print(z1.get_der([x]))
+# assert z1.get_der([x]) == [[2.0], [0.0]]
+
