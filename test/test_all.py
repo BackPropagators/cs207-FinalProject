@@ -704,7 +704,7 @@ def test_elementary_vector_input_vector_output():
 
         x = Var(0)
         y = Var(0.6)
-        f = MultiFunc(Var.arcsin(x), 3 * Var.arcsin(y))
+        f = MultiFunc([Var.arcsin(x), 3 * Var.arcsin(y)])
         np.testing.assert_array_equal(np.round(f.get_value(), 2), np.array([0, 1.93]))
         np.testing.assert_array_equal(np.round(f.get_der([x,y]), 2), np.array([[1., 0.],
                                                                     [0., 3.75]]))
