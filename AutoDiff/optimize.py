@@ -1,9 +1,9 @@
-from ForwardAD import Var, MultiFunc
+from ForwardAD_12_8 import Var, MultiFunc
 import numpy as np
 import types
 
-def optimize(func, initial_guess, tolerance = 10e-6, solver = 'Newton', max_iter = 100,
-             gs_lr = 0.1):
+def optimize(func, initial_guess, tolerance = 10e-6, solver = 'BFGS', max_iter = 100,
+             gd_lr = 0.1):
         """
         Returns the values for the elements in var_list that minimize function func.
         The optimization problem is solved with the method solver and accuracy specified by tolerance
@@ -17,21 +17,20 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'Newton', max_iter
 
         initial_guess : list of real numbers, corresponding to the initial guess for optimal values for variables in input of func
         tolerance : floating point number, by default equal to 10e-6
-        solver : string specifying teh solver to be used. Options are gradient descent 'GS', Newtont's method 'Newton'
+        solver : string specifying teh solver to be used. Options are gradient descent 'GD'
                  and the Broyden Fletcher Goldfarb Shanno method 'BFGS'
-                 by default equal to 'Newton'
+                 by default equal to 'BFGS'
         max_iter : integer corresponding to the maximum number of iterations  for the algorithm
                    by default equal to 100
-        gs_lr : floating point number, learning rate as used for gradient descent
+        gd_lr : floating point number, learning rate as used for gradient descent
                     by default equal to 0.1
-                    Note that this parameter will only be used when solver is specified to 'GS'
+                    Note that this parameter will only be used when solver is specified to 'GD'
 
 
         SOLVER SPECIFICS
         =======
-        1. Newton
 
-        2. Gradient Descent
+        1. Gradient Descent
 
             - start with initial guess x_0
             - while convergence criterium not met for x_k:
@@ -40,7 +39,7 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'Newton', max_iter
                 x_k = x_(k+1)
             - return result
 
-        3. BFGS
+        2. BFGS
 
             - start with initial guess x_0 and B_0 = indentity matrix
             - while convergence criterium not met for x_k:
@@ -69,7 +68,7 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'Newton', max_iter
         EXAMPLES
         =======
 
-        ValueError is raised when solver is not 'GS', 'Newton' or 'BFGS'
+        ValueError is raised when solver is not 'GD' or 'BFGS'
         """
 
         if not isinstance(func, types.FunctionType):
@@ -80,10 +79,7 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'Newton', max_iter
         for val in initial_guess:
             var_list.append(Var(val))
 
-        if solver == 'Newton':
-            pass
-
-        elif solver == 'GS':
+        if solver == 'GD':
             n_iter = 0
 
             # get current evaluation of f at initial guess
@@ -100,7 +96,7 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'Newton', max_iter
                 current_val = current.get_value()
 
                 for i, var in enumerate(var_list):
-                    var._set_value((var - gs_lr*current_der[i]).get_value())
+                    var._set_value((var - gd_lr*current_der[i]).get_value())
 
                 norm_der = np.linalg.norm(current_der)
 
@@ -110,7 +106,7 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'Newton', max_iter
             for var in var_list:
                 opt_val.append(var.get_value())
 
-            return opt_val, current_val, n_iter
+            return opt_val, current_val, n_iter, norm_der
 
         elif solver == 'BFGS':
             n_iter = 0
@@ -135,7 +131,7 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'Newton', max_iter
                 step = np.dot(B_inv, -np.array(current_der)).reshape(2,1)
 
                 for i, var in enumerate(var_list):
-                    var.set_value((var + step[i][0]).get_value())
+                    var._set_value((var + step[i][0]).get_value())
 
                 # compute new B
                 new = func(var_list)
@@ -153,11 +149,11 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'Newton', max_iter
             for var in var_list:
                 opt_val.append(var.get_value())
 
-            return opt_val, current_val, n_iter
+            return opt_val, current_val, n_iter, norm_der
 
 
         else:
-            raise ValueError('No other solvers are built-in. Please choose the default Newton, GS or BFGS')
+            raise ValueError('No other solvers are built-in. Please choose GD or the default BFGS')
 
         return
 
@@ -168,6 +164,6 @@ var_list = [x,y,z]
 
 def f(vars):
     x,y = vars
-    return (Var.sin(x)-1 + Var.log(y, np.e))**4 + (y-4)**2
+    return (x-1)**2 - Var.sin(y)**4
 
-print(optimize(f, [0,1], solver = 'BFGS', max_iter=200, gs_lr=0.2))
+print(optimize(f, [2,1], solver = 'BFGS', tolerance=10e-8, max_iter=200, gd_lr=0.2))
