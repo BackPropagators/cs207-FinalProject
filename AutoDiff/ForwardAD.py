@@ -1208,9 +1208,6 @@ class MultiFunc:
 
         """
         der = []
-        if var_list is None:
-            for f in self._func_list:
-                der.append(f.get_der())
 
         for f in self._func_list:
             der.append(f.get_der(var_list))
@@ -1674,16 +1671,32 @@ class Constant(Var):
 # print(f3.get_value())
 # print(f3.get_der())
 
-x = Var(1.0)
-y = Var(2.0)
-z = Var(3.0)
-print(x, y, z)
-f = x + y + z
-print(f._var_list)
-print(f)
-f1 = Var.logistic(f)
-print(f1)
-print(f1._var_list)
-print(f1.get_der([x, y, z]))
-print(f1.get_value())
-print(np.round(f1.get_der(), 3))
+# x = Var(1.0)
+# y = Var(2.0)
+# z = Var(3.0)
+# print(x, y, z)
+# f = x + y + z
+# print(f._var_list)
+# print(f)
+# f1 = Var.logistic(f)
+# print(f1)
+# print(f1._var_list)
+# print(f1.get_der([x, y, z]))
+# print(f1.get_value())
+# print(np.round(f1.get_der(), 3))
+
+# x = Var(5.0)
+# f = MultiFunc([x + 2, x ** 3, 2 * x])
+# f1 = f.apply(Var.log)
+# print(f1.get_value())
+# print(f1.get_der())
+
+x = Var(1)
+y = Var(2)
+f1 = x + y
+f2 = abs(x + y)
+print(f1 == f2) # should be true because f1 and f2 have the same value and partial derivative w/ respect to x and y.
+
+x = Var(1)
+y = Var(1)
+print(x == y) # should be false because x and y have different variables
