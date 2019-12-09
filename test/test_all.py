@@ -363,10 +363,9 @@ def test_elementary_multivariate_input_scalar_output():
     def suite_arcsin():
         x = Var(1)
         y = Var(-1)
-        # TODO zero division error @Yingsi
-        # f = Var.arcsin(x) - 3 * Var.arcsin(y)
-        # np.testing.assert_array_equal(np.round(f.get_value(), 2), np.array([6.28]))
-        # np.testing.assert_array_equal(np.round(f.get_der([x, y]), 2), np.array([np.nan, np.nan]))
+
+        with np.testing.assert_raises(ZeroDivisionError):
+            f = Var.arcsin(x) - 3 * Var.arcsin(y)
 
         x = Var(0.5)
         y = Var(0.2)
@@ -393,10 +392,8 @@ def test_elementary_multivariate_input_scalar_output():
 
         x = Var(1)
         y = Var(-1)
-        # TODO zero division error @Yingsi
-        # f = Var.arccos(x) - 3 * Var.arccos(y)
-        # np.testing.assert_array_equal(np.round(f.get_value(), 2), np.array([-9.42]))
-        # np.testing.assert_array_equal(np.round(f.get_der([x, y]), 2), np.array([np.nan, np.nan]))
+        with np.testing.assert_raises(ZeroDivisionError):
+            f = Var.arccos(x) - Var.arccos(y)
 
     def suite_arctan():
         x = Var(1)
@@ -509,13 +506,7 @@ def test_elementary_scalar_input_vector_output():
         f1 = abs(f)
         np.testing.assert_array_equal(f1.get_value(), np.array([3., 6., 27.]))
         np.testing.assert_array_equal(f1.get_der([x]), np.array([[1.], [2.], [27.]]))
-#
-#     # def suite_constant():
-#     #     x = Var(5.0)
-#     #     f = Var([x, x ** 2])
-#     #     np.testing.assert_array_equal(f.get_value(), np.array([5., 25.]))
-#     #     np.testing.assert_array_equal(f.get_der(), np.array([[1.], [10.]]))
-#
+
     def suite_sin():
         x = Var(np.pi / 2)
         f = MultiFunc([Var.sin(x) + 1, 3 * Var.sin(x), Var.sin(x) ** 3])
@@ -540,11 +531,9 @@ def test_elementary_scalar_input_vector_output():
         np.testing.assert_array_equal(np.round(f.get_value(), 2), np.array([1.05, 1.52, 0.14]))
         np.testing.assert_array_equal(np.round(f.get_der([x]), 2), np.array([[2.31], [1.15], [0.95]]))
 
-        # TODO zero division error @ Yingsi
-        # x = Var(1)
-        # f = MultiFunc([2 * Var.arcsin(x), Var.arcsin(x) + 1, Var.arcsin(x) ** 3])
-        # np.testing.assert_array_equal(np.round(f.get_value(), 2), np.array([3.14, 2.57, 3.88]))
-        # np.testing.assert_array_equal(np.round(f.get_der([x]), 2), np.array([[np.nan], [np.nan], [np.nan]]))
+        with np.testing.assert_raises(ZeroDivisionError):
+            x = Var(1)
+            f = MultiFunc([2 * Var.arcsin(x), Var.arcsin(x) + 1, Var.arcsin(x) ** 3])
 
         # not defined for |x| > 1
         with np.testing.assert_raises(ValueError):
@@ -557,11 +546,9 @@ def test_elementary_scalar_input_vector_output():
         np.testing.assert_array_equal(np.round(f.get_value(), 2), np.array([2.09, 2.05, 1.15]))
         np.testing.assert_array_equal(np.round(f.get_der([x]), 2), np.array([[-2.31], [-1.15], [-3.8]]))
 
-        # TODO zero division error @ Yingsi
-        # x = Var(1)
-        # f = MultiFunc([2 * Var.arccos(x), Var.arccos(x) + 1, Var.arccos(x) ** 3])
-        # np.testing.assert_array_equal(np.round(f.get_value(), 2), np.array([0., 1., 0.]))
-        # np.testing.assert_array_equal(np.round(f.get_der([x]), 2), np.array([[np.nan], [np.nan], [np.nan]]))
+        with np.testing.assert_raises(ZeroDivisionError):
+            x = Var(1)
+            f = MultiFunc([2 * Var.arccos(x), Var.arccos(x) + 1, Var.arccos(x) ** 3])
 
         # not defined for |x| > 1
         with np.testing.assert_raises(ValueError):
@@ -600,8 +587,7 @@ def test_elementary_scalar_input_vector_output():
         np.testing.assert_array_equal(np.round(f1.get_value(), 2), np.array([2., 2.45, 2.]))
         np.testing.assert_array_equal(np.round(f1.get_der([x]), 2), np.array([[0.25], [0.61], [1.]]))
 
-        # derivative of 0^x does not exist if x < 1
-        # TODO @ Yingsi f = MultiFunc([x, 3 * x])
+        # The derivative of sqrt(x), 1/2 * 1/sqrt(x), is undefined on x = 0.
         with np.testing.assert_raises(ZeroDivisionError):
             x = Var(0.0)
             f = MultiFunc([x, 3 * x])
@@ -611,10 +597,9 @@ def test_elementary_scalar_input_vector_output():
     def suite_log():
         x = Var(5.0)
         f = MultiFunc([x + 2, x ** 3, 2 * x])
-        f1 = f.apply(Var.log)
-        # TODO default log base is e not 2 @ Yingsi
-        # np.testing.assert_array_equal(np.round(f1.get_value(), 2), np.array([2.81, 6.97, 3.32]))
-        # np.testing.assert_array_equal(np.round(f1.get_der([x]), 2), np.array([[0.21], [0.87], [0.29]]))
+        f1 = f.apply(Var.log, 2)
+        np.testing.assert_array_equal(np.round(f1.get_value(), 2), np.array([2.81, 6.97, 3.32]))
+        np.testing.assert_array_equal(np.round(f1.get_der([x]), 2), np.array([[0.21], [0.87], [0.29]]))
 
         # log() not defined for x <= 0
         with np.testing.assert_raises(ValueError):
@@ -638,7 +623,6 @@ def test_elementary_scalar_input_vector_output():
 
     suite_negative()
     suite_abs()
-    # suite_constant()
     suite_sin()
     suite_cos()
     suite_tan()
@@ -676,17 +660,6 @@ def test_elementary_vector_input_vector_output():
         np.testing.assert_array_equal(f1.get_value(), np.array([2., 8., 9.]))
         np.testing.assert_array_equal(np.round(f1.get_der([x, y, z]), 2), np.array([[2., 1., 0.], [0., 12., 5.55], [0., 0., 3.]]))
 
-
-#
-#     # def suite_constant():
-#     #     x = Var(1.0)
-#     #     y = Var(2.0)
-#     #     z = Var(3.0)
-#     #     f = Var([x * y, y ** z, 3 * z])
-#     #     np.testing.assert_array_equal(f.get_value(), np.array([2., 8., 9.]))
-#     #     np.testing.assert_array_equal(np.round(f.get_der(), 2), np.array([[3.], [17.55], [3.]]))
-#
-#
     def suite_sin():
         x = Var(np.pi / 2)
         y = Var(np.pi / 3)
@@ -723,15 +696,18 @@ def test_elementary_vector_input_vector_output():
             z = Var(np.pi / 6)
             f = MultiFunc([Var.arcsin(x), 2 * Var.arcsin(y), Var.arcsin(z) ** 3 + 1])
 
-        # TODO zero division error @ Yingsi
-        # x = Var(0)
-        # y = Var(1)
-        # z = Var(-1)
-        # f = MultiFunc([Var.arcsin(x), 2 * Var.arcsin(y), Var.arcsin(z) ** 3 + 1])
-        # np.testing.assert_array_equal(np.round(f.get_value(), 2), np.array([0., 3.14, -2.88]))
-        # np.testing.assert_array_equal(np.round(f.get_der([x,y,z]), 2), np.array([[1., 0., 0.],
-        #                                                             [np.nan, np.nan, np.nan],
-        #                                                             [np.nan, np.nan, np.nan]]))
+        with np.testing.assert_raises(ZeroDivisionError):
+            x = Var(0)
+            y = Var(1)
+            z = Var(-1)
+            f = MultiFunc([Var.arcsin(x), 2 * Var.arcsin(y), Var.arcsin(z) ** 3 + 1])
+
+        x = Var(0)
+        y = Var(0.6)
+        f = MultiFunc([Var.arcsin(x), 3 * Var.arcsin(y)])
+        np.testing.assert_array_equal(np.round(f.get_value(), 2), np.array([0, 1.93]))
+        np.testing.assert_array_equal(np.round(f.get_der([x,y]), 2), np.array([[1., 0.],
+                                                                    [0., 3.75]]))
 
     def suite_arccos():
         with np.testing.assert_raises(ValueError):
@@ -740,15 +716,18 @@ def test_elementary_vector_input_vector_output():
             z = Var(np.pi / 6)
             f = MultiFunc([Var.arcsin(x), 2 * Var.arcsin(y), Var.arcsin(z) ** 3 + 1])
 
-        # TODO zero division error @ Yingsi
-        # x = Var(0)
-        # y = Var(1)
-        # z = Var(-1)
-        # f = MultiFunc([Var.arccos(x), 2 * Var.arccos(y), Var.arccos(z) ** 3 + 1])
-        # np.testing.assert_array_equal(np.round(f.get_value(), 2), np.array([1.57, 0., 32.01]))
-        # np.testing.assert_array_equal(np.round(f.get_der([x,y,z]), 2), np.array([[-1., 0., 0.],
-        #                                                             [np.nan, np.nan, np.nan],
-        #                                                             [np.nan, np.nan, np.nan]]))
+        with np.testing.assert_raises(ZeroDivisionError):
+            x = Var(0)
+            y = Var(1)
+            z = Var(-1)
+            f = MultiFunc([Var.arccos(x), 2 * Var.arccos(y), Var.arccos(z) ** 3 + 1])
+
+        x = Var(0)
+        y = Var(0.6)
+        f = MultiFunc([Var.arccos(x), 3 * Var.arccos(y)])
+        np.testing.assert_array_equal(np.round(f.get_value(), 2), np.array([1.57, 2.78]))
+        np.testing.assert_array_equal(np.round(f.get_der([x,y]), 2), np.array([[-1., 0.],
+                                                                    [0., -3.75]]))
 
     def suite_arctan():
         x = Var(np.pi / 3)
@@ -829,7 +808,6 @@ def test_elementary_vector_input_vector_output():
                                                                       [0.004, 0.002]]))
     suite_neg()
     suite_abs()
-    # suite_constant()
     suite_sin()
     suite_cos()
     suite_tan()
