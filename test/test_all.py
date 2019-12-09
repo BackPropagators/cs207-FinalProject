@@ -506,13 +506,7 @@ def test_elementary_scalar_input_vector_output():
         f1 = abs(f)
         np.testing.assert_array_equal(f1.get_value(), np.array([3., 6., 27.]))
         np.testing.assert_array_equal(f1.get_der([x]), np.array([[1.], [2.], [27.]]))
-#
-#     # def suite_constant():
-#     #     x = Var(5.0)
-#     #     f = Var([x, x ** 2])
-#     #     np.testing.assert_array_equal(f.get_value(), np.array([5., 25.]))
-#     #     np.testing.assert_array_equal(f.get_der(), np.array([[1.], [10.]]))
-#
+
     def suite_sin():
         x = Var(np.pi / 2)
         f = MultiFunc([Var.sin(x) + 1, 3 * Var.sin(x), Var.sin(x) ** 3])
