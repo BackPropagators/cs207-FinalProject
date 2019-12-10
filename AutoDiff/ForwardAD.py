@@ -1195,9 +1195,18 @@ class Var:
             - _var_list being a list of current variables
             - _der being a list of partial derivatives following the rule d(logistic(u)) = e^(-u)/(1+e^(-u))^2*du
 
-        # TODO
+
         EXAMPLES
         =======
+        # >>> x = Var(1.0)
+        # >>> y = Var(2.0)
+        # >>> z = Var(3.0)
+        # >>> f = x + y + z
+        # >>> f1 = Var.logistic(f)
+        # >>> print(np.round(f1.get_value(), 3))
+        0.998
+        # >>> print(np.round(f1.get_der([x,y,z]), 3))
+        [0.002, 0.002, 0.002]
 
         """
         new_val = 1 / (1 + np.exp(-self._val))
@@ -1615,9 +1624,15 @@ class MultiFunc:
             Returns a MultiFunc object with:
             - for func_list an array of the absolute values of all individual Var objects in self.func_list
 
-        # TODO
         EXAMPLES
         =========
+        # >>> x = Var(3.0)
+        # >>> f = MultiFunc([x, 2 * x, x ** 3])
+        # >>> f1 = abs(f)
+        # >>> print(f1.get_value())
+        [3., 6., 27.]
+        # >>> print(f1.get_der([x]))
+        [[1.], [2.], [27.]]
         """
 
         new_func_list = []
@@ -1640,9 +1655,15 @@ class MultiFunc:
             Returns a MultiFunc object with:
             - for func_list an array of the opposite values of all individual Var objects in self.func_list
 
-        # TODO
         EXAMPLES
         =========
+        # >>> x = Var(2.0)
+        # >>> f = MultiFunc([x, 2 * x, x ** 2])
+        # >>> f1 = -f
+        # >>> print(f1.get_value())
+        [-2., -4., -4.]
+        # >>> print(f1.get_der([x]))
+        [[-1.], [-2.], [-4.]]
         """
         new_func_list = []
         for i in range(len(self)):
@@ -1739,9 +1760,16 @@ class MultiFunc:
             Returns a MultiFunc object with:
             - for func_list an array of the function func applied to all individual Var objects in self.func_list
 
-        # TODO
+
         EXAMPLES
         =========
+        # >>> x = Var(2.0)
+        # >>> f = MultiFunc([x + 2, 3 * x, x ** 2])
+        # >>> f1 = f.apply(Var.logistic)
+        # >>> print(np.round(f1.get_value(), 3))
+        [0.982, 0.998, 0.982]
+        # >>> print(np.round(f1.get_der([x]), 3))
+        [[0.018], [0.007], [0.071]]
 
         """
 
@@ -1764,65 +1792,4 @@ class _Constant(Var):
         self._var_list = []
         self._der = []
 
-
-# x = Var(1)
-# y = Var(1)
-# z = Var(1)
-# func_list = [x+y, x+y+z]
-# multi_func = MultiFunc(func_list)
-# print(multi_func.get_values())
-# print(multi_func.get_der([x,y,z]))
-#
-# new_f = multi_func.apply(Var.sin)
-# print(new_f.get_values())
-# print(new_f.get_der([x,y,z]))
-
-# # x = Var(2)
-# y = Var(-5)
-# f1 = - 3 * y
-# print(f1.get_value())
-# print(f1.get_der())
-# # f2 = -f1
-# # print(f2.get_value())
-# # print(f2.get_der())
-# f3 = abs(f1)
-# print(f3.get_value())
-# print(f3.get_der())
-
-# x = Var(1.0)
-# y = Var(2.0)
-# z = Var(3.0)
-# print(x, y, z)
-# f = x + y + z
-# print(f._var_list)
-# print(f)
-# f1 = Var.logistic(f)
-# print(f1)
-# print(f1._var_list)
-# print(f1.get_der([x, y, z]))
-# print(f1.get_value())
-# print(np.round(f1.get_der(), 3))
-
-# x = Var(5.0)
-# f = MultiFunc([x + 2, x ** 3, 2 * x])
-# f1 = f.apply(Var.log)
-# print(f1.get_value())
-# print(f1.get_der())
-
-# x = Var(1)
-# y = Var(2)
-# f1 = x + y
-# f2 = 2*x + y
-# print(f1 == f2) # should be true because f1 and f2 have the same value and partial derivative w/ respect to x and y.
-
-# x = Var(1)
-# y = Var(1)
-# print(x == y) # should be false because x and y have different variables
-
-# x = Var(3.0)
-# y = Var(2.0)
-# z = MultiFunc([x, y])
-# z1 = 2*z
-# print(z1.get_der([x]))
-# assert z1.get_der([x]) == [[2.0], [0.0]]
 
