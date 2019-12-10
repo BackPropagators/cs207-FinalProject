@@ -170,14 +170,3 @@ def optimize(func, initial_guess, tolerance = 10e-6, solver = 'BFGS', max_iter =
         else:
             raise ValueError('No other solvers are built-in. Please choose GD or the default BFGS')
 
-
-x = Var(1)
-y = Var(1)
-z = Var(1)
-var_list = [x,y,z]
-
-def f(vars):
-    x,y = vars
-    return (x-1)**2 - Var.sin(y)**4
-
-print(optimize(f, [2,1], solver = 'BFGS', tolerance=10e-8, max_iter=200, gd_lr=0.2))

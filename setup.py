@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
                  name="AutoDifferentiate",
-                 version="1.0.0",
+                 version="1.0.1",
                  author="Lihong Zhang, Yichen Geng, Yingsi Jian, Matthieu Meeus  ",
                  description="An AutoDifferentiation package",
                  long_description="The software library uses the concept of automatic differentiation "
