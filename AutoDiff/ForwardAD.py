@@ -159,11 +159,22 @@ class Var:
         RETURNS
         =======
         a boolean, indicating if self and other have the same value and same variables with same partial derivatives
-
-        # TODO
+        
         EXAMPLES
         =======
-
+        # >>> x = Var(4.0)
+        # >>> y = Var(1.5)
+        # >>> q = Var(4.0)
+        # >>> m1 = x + x
+        # >>> m2 = 2*x
+        # >>> x == q
+        False
+        # >>> m1 == m2
+        True
+        # >>> z1 = x*4.0/2.0
+        # >>> z2 = x*2.0
+        # >>> z1 == z2
+        True
         """
         if isinstance(other, Var) and self._val == other._val and len(self._var_list) == len(other._var_list):
             for var, der in zip(self._var_list, self._der):
@@ -185,11 +196,18 @@ class Var:
         =======
         a boolean, indicating if __eq__ returns False
 
-        # TODO
         EXAMPLES
         =======
-
+        # >>> x = Var(4.0)
+        # >>> q = Var(4.0)
+        # >>> x1 = -x
+        # >>> x1.get_value()
+        -4.0 
+        # >>> x2 = -x1
+        # >>> x2.get_value() == q.get_value()
+        True
         """
+        
         return not self == other
 
     def __add__(self, other):
@@ -725,11 +743,12 @@ class Var:
 
         EXAMPLES
         =========
-        # # >>> x = Var(5.0)
-        # # >>> f = 2.0**x
-        # # >>> print(f.get_value())
+        # >>> x = Var(5.0)
+        # >>> f = 2.0**x
+        # >>> print(f.get_value())
         # 32.0
-        # # >>> np.round(f.get_der(), 8) == 22.18070978
+        # >>> np.round(f.get_der(), 8)
+        # 22.18070978
 
         Raises TypeError when other is not a Var object or a real number
         Raises ValueError when other < 0
@@ -1204,9 +1223,9 @@ class Var:
         # >>> f = x + y + z
         # >>> f1 = Var.logistic(f)
         # >>> print(np.round(f1.get_value(), 3))
-        0.998
+        # 0.998
         # >>> print(np.round(f1.get_der([x,y,z]), 3))
-        [0.002, 0.002, 0.002]
+        # [0.002, 0.002, 0.002]
 
         """
         new_val = 1 / (1 + np.exp(-self._val))
@@ -1257,8 +1276,13 @@ class MultiFunc:
         =======
         val: a list of attributes Var.val, or thus a list of real numbers
 
-        # TODO
         EXAMPLES
+        # >>> x = Var(4.0)
+        # >>> y = Var(1.5)
+        # >>> x.get_value() + 1
+        # 5.0
+        # >>> y.get_value()
+        # 1.5
         =======
 
         """
@@ -1282,11 +1306,17 @@ class MultiFunc:
                   of the i-th element in self.func_list with respect to the j-th Var in var_list.
                   This matrix only contains real values
 
-        # TODO
         EXAMPLES
         =======
-
+        # >>> x = Var(3.0)
+        # >>> y = Var(2.0)
+        # >>> z = 2*x + y
+        # >>> z.get_der()
+        # [2.0, 1.0]
+        # >>> z.get_der([x])
+        # [2.0]
         """
+        
         der = []
 
         for f in self._func_list:
@@ -1306,9 +1336,14 @@ class MultiFunc:
         =======
         a boolean, indicating if each two corresponding entries in self and other are equal
 
-        # TODO
         EXAMPLES
         =======
+        # >>> x = Var(3.0)
+        # >>> y = Var(2.0)
+        # >>> z = MultiFunc([x+x, y**2])
+        # >>> p = MultiFunc([2*x, y*y])
+        # >>> z == p
+        # True
         """
         if isinstance(other, MultiFunc):
             for f1, f2 in zip(self._func_list, other._func_list):
@@ -1329,9 +1364,16 @@ class MultiFunc:
         =======
         a boolean, indicating if __eq__returns false
 
-        # TODO
         EXAMPLES
         =======
+        # >>> x = Var(3.0)
+        # >>> y = Var(2.0)
+        # >>> z = MultiFunc([x+x, y**2])
+        # >>> p = MultiFunc([2*x, y*y])
+        # >>> z1 = -z
+        # >>> z2 = -z1
+        # >>> z2 == p
+        # True
         """
         return not self == other
 
@@ -1369,9 +1411,14 @@ class MultiFunc:
             If other is not a MultiFunc object, returns a MultiFunc object with:
             - for func_list an array of the Var objects in self.func_list added to other
 
-        # TODO
         EXAMPLES
         =========
+        # >>> x = Var(3.0)
+        # >>> y = Var(2.0)
+        # >>> z = MultiFunc([x, y])
+        # >>> z1 = z + z
+        # >>> z1.get_value()
+        # [6.0, 4.0]
 
         Raises ValueError when other is a MultiFunc object with other dimensions than self
         """
@@ -1405,9 +1452,14 @@ class MultiFunc:
             If other is not a MultiFunc object, returns a MultiFunc object with:
             - for func_list an array of the Var objects in self.func_list added to other
 
-        # TODO
         EXAMPLES
         =========
+        # >>> x = Var(3.0)
+        # >>> y = Var(2.0)
+        # >>> z = MultiFunc([x, y])
+        # >>> z = 2 + z
+        # >>> z.get_value() = [3.0, 2.0] + 2
+        # True
         """
         new_func_list = []
         for i in range(len(self)):
@@ -1434,9 +1486,14 @@ class MultiFunc:
             If other is not a MultiFunc object, returns a MultiFunc object with:
             - for func_list an array of the Var objects in self.func_list added minus other
 
-        # TODO
         EXAMPLES
         =========
+        # >>> x = Var(3.0)
+        # >>> y = Var(2.0)
+        # >>> z = MultiFunc([x, y])
+        # >>> z1 = z - 1
+        # >>> z1.get_value()
+        # [2.0, 1.0]
 
         Raises ValueError when other is a MultiFunc object with other dimensions than self
         """
@@ -1461,7 +1518,6 @@ class MultiFunc:
         self: object of MultiFunc
         other: a float or integer number or a Var object
 
-        # TODO
         RETURNS
         =======
         MultiFunc(new_func_list): an object of MultiFunc
@@ -1473,7 +1529,14 @@ class MultiFunc:
 
         EXAMPLES
         =========
+        # >>> x = Var(3.0)
+        # >>> y = Var(2.0)
+        # >>> z = MultiFunc([x, y])
+        # >>> z1 = 10 - z
+        # >>> z1.get_value()
+        # [7.0, 8.0]
         """
+        
         new_func_list = []
         for i in range(len(self)):
             new_func_list.append(other - self._func_list[i])
@@ -1488,7 +1551,6 @@ class MultiFunc:
         self: object of MultiFunc
         other: a float or integer number, a Var object or a Multifunc object
 
-        # TODO
         RETURNS
         =======
         MultiFunc(new_func_list): an object of MultiFunc
@@ -1502,6 +1564,12 @@ class MultiFunc:
 
         EXAMPLES
         =========
+        # >>> x = Var(3.0)
+        # >>> y = Var(2.0)
+        # >>> z = MultiFunc([x, y])
+        # >>> z1 = z * 10
+        # >>> z1.get_value()
+        # [30.0, 20.0]
 
         Raises ValueError when other is a MultiFunc object with other dimensions than self
         """
@@ -1535,10 +1603,16 @@ class MultiFunc:
             If other is not a MultiFunc object, returns a MultiFunc object with:
             - for func_list an array of other multiplied by the Var objects in self.func_list
 
-        # TODO
         EXAMPLES
         =========
+        # >>> x = Var(3.0)
+        # >>> y = Var(2.0)
+        # >>> z = MultiFunc([x, y])
+        # >>> z1 = 10 * z
+        # >>> z1.get_value()
+        # [30.0, 20.0]
         """
+        
         new_func_list = []
         for i in range(len(self)):
             new_func_list.append(other * self._func_list[i])
@@ -1563,10 +1637,15 @@ class MultiFunc:
 
             If other is not a MultiFunc object, returns a MultiFunc object with:
             - for func_list an array of the Var objects in self.func_list divided by other
-
-        # TODO
+            
         EXAMPLES
         =========
+        # >>> x = Var(3.0)
+        # >>> y = Var(2.0)
+        # >>> z = MultiFunc([x, y])
+        # >>> z1 = z/2.0
+        # >>> z1.get_value()
+        # [1.5, 1.0]
 
         Raises ValueError when other is a MultiFunc object with other dimensions than self
         """
@@ -1600,9 +1679,14 @@ class MultiFunc:
             If other is not a MultiFunc object, returns a MultiFunc object with:
             - for func_list an array of other divided by the Var objects in self.func_list
 
-        # TODO
         EXAMPLES
         =========
+        # >>> x = Var(3.0)
+        # >>> y = Var(2.0)
+        # >>> z = MultiFunc([x, y])
+        # >>> z1 = 6.0/z
+        # >>> z1.get_value()
+        # [2.0, 3.0]
         """
         new_func_list = []
         for i in range(len(self)):
@@ -1630,9 +1714,9 @@ class MultiFunc:
         # >>> f = MultiFunc([x, 2 * x, x ** 3])
         # >>> f1 = abs(f)
         # >>> print(f1.get_value())
-        [3., 6., 27.]
+        # [3., 6., 27.]
         # >>> print(f1.get_der([x]))
-        [[1.], [2.], [27.]]
+        # [[1.], [2.], [27.]]
         """
 
         new_func_list = []
@@ -1661,9 +1745,9 @@ class MultiFunc:
         # >>> f = MultiFunc([x, 2 * x, x ** 2])
         # >>> f1 = -f
         # >>> print(f1.get_value())
-        [-2., -4., -4.]
+        # [-2., -4., -4.]
         # >>> print(f1.get_der([x]))
-        [[-1.], [-2.], [-4.]]
+        # [[-1.], [-2.], [-4.]]
         """
         new_func_list = []
         for i in range(len(self)):
@@ -1690,9 +1774,16 @@ class MultiFunc:
             If power is not a MultiFunc object, returns a MultiFunc object with:
             - for func_list an array of Var objects of self raised to the specified power
 
-        # TODO
         EXAMPLES
         =========
+        # >>> x = Var(3.0)
+        # >>> y = Var(2.0)
+        # >>> z = MultiFunc([x, y])
+        # >>> z1 = z**2
+        # >>> z1.get_value()
+        # [9.0, 4.0]
+        # >>> z1.get_der([x,y])
+        # [[6.0, 0], [0, 4.0]] 
 
         Raises ValueError when power is a MultiFunc object with other dimensions than self
         """
@@ -1727,9 +1818,16 @@ class MultiFunc:
             Returns a MultiFunc object with:
             - for func_list an array of Var objects of self raised to the specified power
 
-        # TODO
         EXAMPLES
         =========
+        # >>> x = Var(3.0)
+        # >>> y = Var(2.0)
+        # >>> z = MultiFunc([x, y])
+        # >>> z1 = 2**z
+        # >>> z1.get_value()
+        # [8.0, 4.0]
+        # >>> np.testing.assert_array_equal(np.round(z1.get_der([x,y]), 10), np.round([[8.0*np.log(2), 0], [0, 4.0*np.log(2)]], 10))
+        # True
 
         """
         new_func_list = []
