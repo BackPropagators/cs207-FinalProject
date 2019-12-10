@@ -750,8 +750,8 @@ def test_multivariate_input_scalar_output():
 
 
 def test_scalar_input_vector_output():
-        def test_overloading():
-            x = Var(4.0)
+    def test_overloading():
+        x = Var(4.0)
         y = MultiFunc([2*x, x**2])
         z = MultiFunc([x, 2*x])
         def test_add():
@@ -821,10 +821,7 @@ def test_scalar_input_vector_output():
         test_rdiv()
         test_pow()
         test_rpow()
-
-
-
-    
+        
     def test_comparison():
         x = Var(4.0)
         y = MultiFunc([x**2, x+x])
@@ -1053,8 +1050,8 @@ def test_scalar_input_vector_output():
 
 
 def test_vector_input_vector_output():
-        def test_overloading():
-            x = Var(3.0)
+    def test_overloading():
+        x = Var(3.0)
         y = Var(2.0)
         z = MultiFunc([x, y])
         p = MultiFunc([y*2, x+2])
