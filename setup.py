@@ -15,7 +15,7 @@ setuptools.setup(
                  long_description_content_type="text/markdown",
                  url="https://github.com/BackPropagators/cs207-FinalProject.git",
                  packages=setuptools.find_packages(),
-                 install_requires =['certifi == 2019.9.11', 'wincertstore == 0.2', 'numpy==1.17.4'],
+                 install_requires =['certifi == 2022.12.7', 'wincertstore == 0.2', 'numpy==1.17.4'],
                  classifiers=[
                               "Programming Language :: Python :: 3",
                               "License :: OSI Approved :: MIT License",
